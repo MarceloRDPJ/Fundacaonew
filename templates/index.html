@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Onboarding Interativo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="videoTitle">Tópico 1: Boas-vindas</h1>
+        
+        <video id="videoPlayer" width="100%" controls></video>
+        
+        <div id="finalSection" class="hidden">
+            <h2>Onboarding Concluído!</h2>
+            <p>Parabéns, você finalizou a primeira parte da sua integração. Agora, para concluir, realize a prova de conhecimentos no link abaixo.</p>
+            <a href="#" id="proofLink" class="button-link" target="_blank" rel="noopener noreferrer">Acessar a Prova</a>
+        </div>
+        
+        <div id="questionPrompt" class="hidden">
+            <p>Você ficou com alguma dúvida sobre este tópico?</p>
+            <button id="yesButton">Sim, tenho uma dúvida</button>
+            <button id="noButton">Não, tudo certo!</button>
+        </div>
+
+        <div id="qaSection" class="hidden">
+            <form id="questionForm" class="question-form">
+                <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
+                <button type="submit" id="sendButton">Enviar</button>
+            </form>
+            <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
+        </div>
+        
+        <p id="status" class="status">Status: Carregando...</p>
+        
+        <div class="chat-log-container">
+            <div id="chatLog"></div>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
