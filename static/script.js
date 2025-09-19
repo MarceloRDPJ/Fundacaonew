@@ -21,7 +21,7 @@ const playlist = [
     // Adicione mais vídeos aqui se precisar, sempre usando apenas o ID limpo
 ];
 
-const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
+const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
 
 let currentVideoIndex = 0;
 let currentContext = null;
