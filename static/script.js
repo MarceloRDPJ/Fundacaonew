@@ -38,7 +38,7 @@ let userName = "";
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
 
-// Evento do botão "Iniciar Integração"
+// Evento do botão "Iniciar Integração" na tela de boas-vindas
 startOnboardingBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName === "") {
@@ -46,26 +46,25 @@ startOnboardingBtn.addEventListener('click', () => {
         return;
     }
 
-    welcomeScreen.classList.add('hidden');
-    assistantContainer.classList.remove('hidden');
+    welcomeScreen.classList.add('hidden');      // <-- ESTA É A LINHA CRÍTICA QUE ESCONDE O POP-UP
+    assistantContainer.classList.remove('hidden'); // Mostra o avatar da assistente
 
     const welcomeMessage = `Olá, ${userName}! Sou a C.I.A., sua Companheira de Integração Artificial. Estou aqui para te guiar. Pront(a) para começar?`;
     assistantText.textContent = welcomeMessage;
     speak(welcomeMessage);
 });
 
-// Evento do botão "Vamos Começar!" da assistente (A CONEXÃO CORRIGIDA)
+// Evento do botão "Vamos Começar!" da assistente
 startJourneyBtn.addEventListener('click', () => {
     assistantContainer.classList.add('hidden'); // Esconde a assistente
     mainContent.classList.remove('hidden');     // Mostra o conteúdo principal
     playNextVideo();                            // Inicia a jornada de vídeos
 });
 
-// --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
 
-// Chamada pela API do YouTube quando ela está pronta
+// --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
 function onYouTubeIframeAPIReady() {
-    // A inicialização do player agora acontece sob demanda, na primeira chamada de playNextVideo
+    // A inicialização do player agora acontece sob demanda
 }
 
 function loadVideoByIndex(index) {
@@ -74,14 +73,12 @@ function loadVideoByIndex(index) {
         videoTitle.textContent = videoData.title;
         
         if (!player) {
-            // Cria o player do YouTube pela primeira vez
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
                 playerVars: { 'autoplay': 1, 'controls': 1, 'modestbranding': 1 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
         } else {
-            // Se o player já existe, apenas carrega o próximo vídeo
             player.loadVideoById(videoData.id);
             player.playVideo();
         }
@@ -111,7 +108,6 @@ function playNextVideo() {
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
-        // Fim da playlist
         videoTitle.classList.add('hidden');
         document.getElementById('video-player-container').classList.add('hidden');
         status.textContent = "Status: Finalizado.";
@@ -131,7 +127,7 @@ function addToChatLog(sender, message) {
 
 // --- EVENTOS DOS BOTÕES INTERNOS ---
 noButton.addEventListener('click', () => {
-    player.stopVideo();
+    if(player && typeof player.stopVideo === 'function') player.stopVideo();
     playNextVideo();
 });
 yesButton.addEventListener('click', () => {
@@ -141,7 +137,7 @@ yesButton.addEventListener('click', () => {
     status.textContent = "Status: Faça sua(s) pergunta(s) ou clique em continuar.";
 });
 continueButton.addEventListener('click', () => {
-    player.stopVideo();
+    if(player && typeof player.stopVideo === 'function') player.stopVideo();
     playNextVideo();
 });
 questionForm.addEventListener('submit', (event) => {
