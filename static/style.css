@@ -232,3 +232,77 @@ body {
 #start-onboarding-btn:hover {
     background-color: #0056b3;
 }
+
+/* --- ESTILOS PARA O AVATAR FUTURISTA (ORBE) --- */
+
+/* A base do nosso orbe */
+#assistant-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%; /* Transforma o div em um círculo perfeito */
+    background: radial-gradient(circle, #5d9eff 0%, #3a7dff 100%); /* Um gradiente azul para dar profundidade */
+    box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99; /* Brilho interno e externo */
+    position: relative; /* Necessário para posicionar as camadas de animação */
+
+    /* Aplica a animação que vamos criar abaixo */
+    animation: pulse 4s ease-in-out infinite;
+}
+
+/* Camadas extras de animação para um efeito mais complexo */
+/* Usamos pseudo-elementos para criar mais dois círculos animados atrás do principal */
+#assistant-avatar::before,
+#assistant-avatar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    box-shadow: 0 0 30px #7b68ee; /* Um brilho mais roxo */
+    z-index: -1; /* Coloca os brilhos atrás do círculo principal */
+}
+
+/* Camada 1 (::before) */
+#assistant-avatar::before {
+    width: 100%;
+    height: 100%;
+    animation: pulse-outer 4s ease-in-out infinite;
+    animation-delay: 0.5s; /* Começa a animação um pouco depois */
+}
+
+/* Camada 2 (::after) */
+#assistant-avatar::after {
+    width: 120%;
+    height: 120%;
+    animation: pulse-outer 4s ease-in-out infinite;
+    animation-delay: 1s; /* Começa ainda mais tarde */
+}
+
+
+/* A definição da nossa animação "pulsante" */
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
+    }
+    50% {
+        transform: scale(1.05); /* Aumenta um pouco de tamanho */
+        box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; /* Aumenta o brilho */
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
+    }
+}
+
+@keyframes pulse-outer {
+    0% {
+        opacity: 0.7;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0.7;
+    }
+}
