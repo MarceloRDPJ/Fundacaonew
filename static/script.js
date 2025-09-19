@@ -16,8 +16,8 @@ const proofLink = document.getElementById('proofLink');
 // --- DADOS DO PROJETO ---
 // MUDANÇA: Use os IDs dos vídeos do YouTube (a parte final do URL de embed)
 const playlist = [
-    { title: "Tópico 1: Apresentando os Benefícios", id: "https://www.youtube.com/embed/TfWqNT4C15w?si=vmkqJ7ONuSFGto6Q" },
-    { title: "Tópico 2: Ferramentas de Trabalho", id: "https://www.youtube.com/embed/nRuJN6wwfvs?si=_6UzPYLUai05PSj6" }
+    { title: "Tópico 1: Apresentando os Benefícios", id: "TfWqNT4C15w?si=vmkqJ7ONuSFGto6Q" },
+    { title: "Tópico 2: Ferramentas de Trabalho", id: "nRuJN6wwfvs?si=_6UzPYLUai05PSj6" }
 ];
 
 const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
