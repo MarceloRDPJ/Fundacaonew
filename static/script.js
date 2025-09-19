@@ -1,5 +1,5 @@
 // --- CONFIGURAÇÃO INICIAL ---
-// NOVO: Referências para os novos elementos
+// Referências para todos os elementos HTML
 const welcomeScreen = document.getElementById('welcome-screen');
 const nameInput = document.getElementById('name-input');
 const startOnboardingBtn = document.getElementById('start-onboarding-btn');
@@ -23,20 +23,22 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
+    // Lembre-se de colocar seus IDs de vídeo corretos e limpos aqui
     { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
     { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" },
     { title: "Tópico 3: Ferramentas de Trabalho", id: "ID_DO_SEU_VIDEO_3_AQUI" }
 ];
 const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
 
-let currentVideoIndex = -1; // Começa em -1 para o primeiro play ser o índice 0
+// Variáveis de estado
+let currentVideoIndex = -1; // Começa em -1 para que a primeira chamada seja para o índice 0
 let currentContext = null;
 let player;
-let userName = ""; // NOVO: Variável para guardar o nome do usuário
+let userName = "";
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
 
-// Evento do botão "Iniciar Integração" na tela de boas-vindas
+// Evento do botão "Iniciar Integração"
 startOnboardingBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName === "") {
@@ -44,25 +46,26 @@ startOnboardingBtn.addEventListener('click', () => {
         return;
     }
 
-    welcomeScreen.classList.add('hidden'); // Esconde a tela de boas-vindas
-    assistantContainer.classList.remove('hidden'); // Mostra o avatar da assistente
+    welcomeScreen.classList.add('hidden');
+    assistantContainer.classList.remove('hidden');
 
     const welcomeMessage = `Olá, ${userName}! Sou a C.I.A., sua Companheira de Integração Artificial. Estou aqui para te guiar. Pront(a) para começar?`;
     assistantText.textContent = welcomeMessage;
     speak(welcomeMessage);
 });
 
-// Evento do botão "Vamos Começar!" no balão da assistente
+// Evento do botão "Vamos Começar!" da assistente (A CONEXÃO CORRIGIDA)
 startJourneyBtn.addEventListener('click', () => {
     assistantContainer.classList.add('hidden'); // Esconde a assistente
     mainContent.classList.remove('hidden');     // Mostra o conteúdo principal
-    playNextVideo(); // Começa o primeiro vídeo
+    playNextVideo();                            // Inicia a jornada de vídeos
 });
 
-
 // --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
+
+// Chamada pela API do YouTube quando ela está pronta
 function onYouTubeIframeAPIReady() {
-    // A inicialização agora espera o usuário clicar em "Iniciar"
+    // A inicialização do player agora acontece sob demanda, na primeira chamada de playNextVideo
 }
 
 function loadVideoByIndex(index) {
@@ -71,21 +74,17 @@ function loadVideoByIndex(index) {
         videoTitle.textContent = videoData.title;
         
         if (!player) {
+            // Cria o player do YouTube pela primeira vez
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
                 playerVars: { 'autoplay': 1, 'controls': 1, 'modestbranding': 1 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
         } else {
+            // Se o player já existe, apenas carrega o próximo vídeo
             player.loadVideoById(videoData.id);
             player.playVideo();
         }
-    } else {
-        videoTitle.classList.add('hidden');
-        document.getElementById('video-player-container').classList.add('hidden');
-        status.textContent = "Status: Finalizado.";
-        proofLink.href = GOOGLE_DRIVE_LINK;
-        finalSection.classList.remove('hidden');
     }
 }
 
@@ -100,7 +99,7 @@ function onPlayerStateChange(event) {
     }
 }
 
-// --- FUNÇÕES DE CONTROLE DO FLUXO (Adaptadas) ---
+// --- FUNÇÕES DE CONTROLE DO FLUXO ---
 function playNextVideo() {
     qaSection.classList.add('hidden');
     questionPrompt.classList.add('hidden');
@@ -108,13 +107,11 @@ function playNextVideo() {
     currentContext = null;
 
     currentVideoIndex++;
-    if (currentVideoIndex === 0 && !player) {
-        // Se for o primeiro vídeo, inicializa o player
-        loadVideoByIndex(currentVideoIndex);
-    } else if (currentVideoIndex < playlist.length) {
-        // Se o player já existe, apenas carrega o próximo vídeo
+
+    if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
+        // Fim da playlist
         videoTitle.classList.add('hidden');
         document.getElementById('video-player-container').classList.add('hidden');
         status.textContent = "Status: Finalizado.";
@@ -122,8 +119,7 @@ function playNextVideo() {
         finalSection.classList.remove('hidden');
     }
 }
-//... resto do código (addToChatLog, eventos de botões, speak, getAnswerFromAI)...
-// O resto do código permanece o mesmo. As funções de chat e botões internos não mudam.
+
 function addToChatLog(sender, message) {
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
@@ -132,6 +128,8 @@ function addToChatLog(sender, message) {
     chatLog.appendChild(messageElement);
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
+
+// --- EVENTOS DOS BOTÕES INTERNOS ---
 noButton.addEventListener('click', () => {
     player.stopVideo();
     playNextVideo();
@@ -154,6 +152,8 @@ questionForm.addEventListener('submit', (event) => {
     getAnswerFromAI(userQuestion);
     questionInput.value = '';
 });
+
+// --- LÓGICA DO ASSISTENTE DE IA (CHAT) ---
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -161,6 +161,7 @@ function speak(text, onEndCallback) {
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
 }
+
 function getAnswerFromAI(question) {
     status.textContent = "Pensando...";
     fetch('/ask', {
