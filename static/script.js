@@ -18,6 +18,7 @@ const proofLink = document.getElementById('proofLink');
 const playlist = [
     { title: "Tópico 1: Apresentando os Benefícios", id: "TfWqNT4C15w" },
     { title: "Tópico 2: Ferramentas de Trabalho", id: "nRuJN6wwfvs" }
+    // Adicione mais vídeos aqui se precisar, sempre usando apenas o ID limpo
 ];
 
 const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
