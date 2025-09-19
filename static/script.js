@@ -10,17 +10,16 @@ const questionInput = document.getElementById('questionInput');
 const continueButton = document.getElementById('continueButton');
 const status = document.getElementById('status');
 const chatLog = document.getElementById('chatLog');
-// NOVO: Referências para a seção final
 const finalSection = document.getElementById('finalSection');
 const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
+// MUDANÇA PRINCIPAL: Substitua os caminhos locais pelos links do Google Drive
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", src: "/static/videos/video1.mp4" },
-    { title: "Tópico 2: Apresentando os Benefícios", src: "/static/videos/video2.mp4" }
+    { title: "Tópico 1: Boas-vindas", src: "https://drive.google.com/uc?id=1u2qTP8iy-1_dc1sUQeBWV2AOVd7VW1m0" },
+    { title: "Tópico 2: Apresentando os Benefícios", src: "https://drive.google.com/uc?id=1K1GSocAMpLK8UWsNYKGxVuhNq1dlIuV3" }
 ];
 
-// IMPORTANTE: Cole o link compartilhável do seu Google Drive (ou Forms) aqui!
 const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
 
 let currentVideoIndex = 0;
@@ -40,12 +39,9 @@ function playNextVideo() {
         videoPlayer.play();
         status.textContent = "Status: Reproduzindo vídeo...";
     } else {
-        // MUDANÇA: Lógica para o fim da playlist
         videoTitle.classList.add('hidden');
         videoPlayer.classList.add('hidden');
         status.textContent = "Status: Finalizado.";
-        
-        // Define o link da prova e mostra a seção final
         proofLink.href = GOOGLE_DRIVE_LINK;
         finalSection.classList.remove('hidden');
     }
