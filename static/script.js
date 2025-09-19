@@ -1,6 +1,6 @@
 // --- CONFIGURAÇÃO INICIAL ---
 const videoTitle = document.getElementById('videoTitle');
-const videoPlayer = document.getElementById('videoPlayer');
+// REMOVIDO: const videoPlayer = document.getElementById('videoPlayer');
 const questionPrompt = document.getElementById('questionPrompt');
 const yesButton = document.getElementById('yesButton');
 const noButton = document.getElementById('noButton');
@@ -14,34 +14,104 @@ const finalSection = document.getElementById('finalSection');
 const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
-// MUDANÇA PRINCIPAL: Substitua os caminhos locais pelos links do Google Drive
+// MUDANÇA: Use os IDs dos vídeos do YouTube (a parte final do URL de embed)
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", src: "https://drive.google.com/uc?id=1u2qTP8iy-1_dc1sUQeBWV2AOVd7VW1m0" },
-    { title: "Tópico 2: Apresentando os Benefícios", src: "https://drive.google.com/uc?id=1K1GSocAMpLK8UWsNYKGxVuhNq1dlIuV3" }
+    { title: "Tópico 1: Apresentando os Benefícios", id: "https://www.youtube.com/embed/TfWqNT4C15w?si=vmkqJ7ONuSFGto6Q" },
+    { title: "Tópico 2: Ferramentas de Trabalho", id: "https://www.youtube.com/embed/nRuJN6wwfvs?si=_6UzPYLUai05PSj6" }
 ];
 
-const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
+const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
 
 let currentVideoIndex = 0;
 let currentContext = null;
+let player; // Variável global para o player do YouTube
 
-// --- FUNÇÕES DE CONTROLE DO FLUXO ---
+// --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
+// Esta função será chamada automaticamente quando a API do YouTube estiver pronta
+function onYouTubeIframeAPIReady() {
+    status.textContent = "Status: Pronto. Clique play para começar.";
+    loadVideoByIndex(currentVideoIndex);
+}
+
+/**
+ * Carrega e inicia um vídeo do YouTube.
+ * @param {number} index - O índice do vídeo na playlist.
+ */
+function loadVideoByIndex(index) {
+    if (index < playlist.length) {
+        const videoData = playlist[index];
+        videoTitle.textContent = videoData.title;
+        
+        if (!player) {
+            // Cria o player do YouTube pela primeira vez
+            player = new YT.Player('youtubePlayer', {
+                height: '390',
+                width: '640',
+                videoId: videoData.id,
+                playerVars: {
+                    'autoplay': 0, // Desativar autoplay inicial
+                    'controls': 1,
+                    'modestbranding': 1 // Tentar reduzir a logo do YouTube
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        } else {
+            // Se o player já existe, apenas carrega um novo vídeo
+            player.loadVideoById(videoData.id);
+            player.pauseVideo(); // Começa pausado
+        }
+    } else {
+        // Fim da playlist: exibe a seção final com o link da prova
+        videoTitle.classList.add('hidden');
+        document.getElementById('video-player-container').classList.add('hidden'); // Esconde o contêiner do player
+        status.textContent = "Status: Finalizado.";
+        
+        proofLink.href = GOOGLE_DRIVE_LINK;
+        finalSection.classList.remove('hidden');
+    }
+}
+
+/**
+ * Chamado quando o player do YouTube está pronto.
+ */
+function onPlayerReady(event) {
+    // Se quiser autoplay no primeiro vídeo, use event.target.playVideo();
+    // No nosso caso, queremos que o usuário dê play
+    status.textContent = "Status: Pronto para começar. Dê Play no vídeo.";
+}
+
+/**
+ * Chamado quando o estado do player do YouTube muda (tocando, pausado, terminou, etc.).
+ * @param {Object} event - O objeto de evento do player.
+ */
+function onPlayerStateChange(event) {
+    if (event.data === YT.PlayerState.ENDED) {
+        // O vídeo terminou de tocar
+        status.textContent = "Status: Vídeo concluído. Responda a pergunta abaixo.";
+        questionPrompt.classList.remove('hidden'); // Mostra os botões Sim/Não
+    }
+}
+
+// --- FUNÇÕES DE CONTROLE DO FLUXO (Adaptadas) ---
+
 function playNextVideo() {
     qaSection.classList.add('hidden');
     questionPrompt.classList.add('hidden');
     chatLog.innerHTML = '';
+    currentContext = null; // Limpa o contexto para o novo tópico
 
     currentVideoIndex++;
     if (currentVideoIndex < playlist.length) {
-        const video = playlist[currentVideoIndex];
-        videoTitle.textContent = video.title;
-        videoPlayer.src = video.src;
-        videoPlayer.play();
-        status.textContent = "Status: Reproduzindo vídeo...";
+        loadVideoByIndex(currentVideoIndex); // Carrega o próximo vídeo
     } else {
+        // Fim da playlist: exibe a seção final
         videoTitle.classList.add('hidden');
-        videoPlayer.classList.add('hidden');
+        document.getElementById('video-player-container').classList.add('hidden'); // Esconde o contêiner do player
         status.textContent = "Status: Finalizado.";
+        
         proofLink.href = GOOGLE_DRIVE_LINK;
         finalSection.classList.remove('hidden');
     }
@@ -57,12 +127,12 @@ function addToChatLog(sender, message) {
 }
 
 // --- EVENTOS DE INTERAÇÃO DO USUÁRIO ---
-videoPlayer.addEventListener('ended', () => {
-    status.textContent = "Status: Vídeo concluído. Responda a pergunta abaixo.";
-    questionPrompt.classList.remove('hidden');
-});
+// Evento 'ended' do videoPlayer foi removido pois agora usamos onPlayerStateChange
 
-noButton.addEventListener('click', playNextVideo);
+noButton.addEventListener('click', () => {
+    player.stopVideo(); // Para o vídeo atual antes de ir para o próximo
+    playNextVideo();
+});
 
 yesButton.addEventListener('click', () => {
     questionPrompt.classList.add('hidden');
@@ -71,7 +141,10 @@ yesButton.addEventListener('click', () => {
     status.textContent = "Status: Faça sua(s) pergunta(s) ou clique em continuar.";
 });
 
-continueButton.addEventListener('click', playNextVideo);
+continueButton.addEventListener('click', () => {
+    player.stopVideo(); // Para o vídeo atual
+    playNextVideo();
+});
 
 questionForm.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -82,14 +155,11 @@ questionForm.addEventListener('submit', (event) => {
     questionInput.value = '';
 });
 
+// window.onload agora só garante que a API do YouTube será carregada
+// A função onYouTubeIframeAPIReady() é que inicia o processo de carregar o primeiro vídeo.
 window.onload = () => {
-    status.textContent = "Status: Carregando...";
-    if (playlist.length > 0) {
-        const firstVideo = playlist[0];
-        videoTitle.textContent = firstVideo.title;
-        videoPlayer.src = firstVideo.src;
-        status.textContent = "Status: Pronto. Clique play para começar.";
-    }
+    // Nenhuma ação específica aqui, a API do YouTube fará o resto.
+    // O player só será inicializado quando onYouTubeIframeAPIReady for chamado.
 };
 
 // --- LÓGICA DO ASSISTENTE DE IA ---

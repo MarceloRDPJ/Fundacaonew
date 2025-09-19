@@ -10,7 +10,9 @@
     <div class="container">
         <h1 id="videoTitle">Tópico 1: Boas-vindas</h1>
         
-        <video id="videoPlayer" width="100%" controls></video>
+        <div id="video-player-container">
+            <div id="youtubePlayer"></div>
+        </div>
         
         <div id="finalSection" class="hidden">
             <h2>Onboarding Concluído!</h2>
@@ -39,6 +41,7 @@
         </div>
     </div>
 
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="/static/script.js"></script>
 </body>
 </html>
