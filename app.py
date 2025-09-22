@@ -16,6 +16,18 @@ CORS(app)
 # Pega as chaves do ambiente. No Render, virá das "Environment Variables". Localmente, do .env.
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 VOICE_ID = os.getenv("VOICE_ID")
+
+# --- CÓDIGO DE DEBUG TEMPORÁRIO ---
+print("--- INICIANDO VERIFICAÇÃO DE CHAVES NO RENDER ---")
+print(f"VOICE_ID lido pelo Render: '{VOICE_ID}'") # Imprime o ID da voz entre aspas simples
+
+if ELEVENLABS_API_KEY:
+    # Imprime apenas uma parte da chave para segurança
+    print(f"API Key lida pelo Render: Existe. Começa com '{ELEVENLABS_API_KEY[:4]}' e termina com '{ELEVENLABS_API_KEY[-4:]}'")
+else:
+    print("API Key lida pelo Render: NÃO FOI ENCONTRADA (None)")
+print("--- FIM DA VERIFICAÇÃO ---")
+
 TTS_URL = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
