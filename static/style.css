@@ -37,14 +37,16 @@ body {
     height: 100%;
 }
 
-/* --- Estilos para a Assistente no canto --- */
+/* --- MUDANÇA: Centraliza a assistente na tela --- */
 #assistant-container {
     position: fixed;
-    bottom: 20px;
-    right: 30px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* O truque para centralização perfeita */
     display: flex;
-    align-items: flex-end;
-    gap: 15px;
+    align-items: center; /* Alinha os itens no centro */
+    flex-direction: column; /* Empilha o balão em cima do orbe */
+    gap: 20px; /* Espaçamento entre o balão e o orbe */
     z-index: 999;
 }
 
@@ -58,11 +60,13 @@ body {
     margin-bottom: 20px;
     text-align: center;
 }
+/* MUDANÇA: Ajusta a cauda do balão para a posição central */
 .speech-bubble::after { /* A "cauda" do balão */
     content: '';
     position: absolute;
-    bottom: -10px;
-    right: 30px;
+    bottom: -10px; /* Continua saindo da parte de baixo */
+    left: 50%; /* Agora fica no meio do balão */
+    transform: translateX(-50%); /* Ajuste para centralizar perfeitamente */
     border-width: 10px 10px 0;
     border-style: solid;
     border-color: #fff transparent;
