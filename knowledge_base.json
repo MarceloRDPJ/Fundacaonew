@@ -1,9 +1,7 @@
 {
     "entities": {
         "departamento": {
-            "RH": "Joana Silva",
-            "TI": "Marcos Oliveira",
-            "Financeiro": "Beatriz Costa"
+            "RH": "Joana Silva", "TI": "Marcos Oliveira", "Financeiro": "Beatriz Costa"
         }
     },
     "intents": [
@@ -13,37 +11,30 @@
             "answer": "Olá! Sou o assistente de onboarding. Como posso te ajudar hoje?"
         },
         {
-            "tag": "chefe_departamento",
-            "keywords": ["chefe", "gestor", "responsável", "líder", "gerente"],
-            "answer": "O líder do departamento de {departamento} é {chefe}. Se precisar, a sala dele(a) é a B-12.",
-            "entity": "departamento",
-            "follow_up": "Posso ajudar com mais alguma coisa?"
-        },
-        {
             "tag": "beneficios_geral",
             "keywords": ["benefícios", "vantagens", "plano de saúde", "convênio"],
             "answer": "Nossa empresa oferece plano de saúde, vale refeição e auxílio creche. Sobre qual deles você gostaria de saber mais?",
             "context_set": "aguardando_especificacao_beneficio"
         },
         {
-            "tag": "vale_refeicao_direto",
-            "keywords": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação"],
-            "answer": "O valor do vale refeição é de 30 reais por dia útil.",
-            "follow_up": "Ficou claro? Precisa de mais algum detalhe?"
-        },
-        {
-            "tag": "vale_refeicao_contexto",
+            "tag": "vale_refeicao_valor_contexto",
             "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["vale refeição", "vr", "ticket", "comida", "valor vale"],
+            "keywords": ["vale refeição", "vr", "ticket", "valor vale"],
             "answer": "O valor do vale refeição é R$700,00 mensais.",
             "follow_up": "Posso detalhar outro benefício para você?"
         },
         {
-            "tag": "vale_refeicao_desconto",
+            "tag": "vale_refeicao_desconto_contexto",
             "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["desconto", "vale refeição","vr", "valor desconto"],
+            "keywords": ["desconto", "valor do desconto"],
             "answer": "É descontado o valor referente a R$20,00 (vinte reais) por mês.",
             "follow_up": "Posso detalhar outro benefício para você?"
+        },
+        {
+            "tag": "vale_refeicao_desconto_direto",
+            "keywords": ["desconto do vale refeicao", "desconto vr", "desconto do vale"],
+            "answer": "É descontado o valor referente a R$20,00 (vinte reais) por mês.",
+            "follow_up": "Posso te ajudar com mais alguma coisa sobre os benefícios?"
         },
         {
             "tag": "plano_de_saude",
@@ -75,11 +66,6 @@
             "tag": "agradecimento",
             "keywords": ["obrigado", "obrigada", "valeu", "ajudou sim"],
             "answer": "De nada! Se precisar de mais alguma coisa, é só perguntar."
-        },
-        {
-            "tag": "despedida",
-            "keywords": ["tchau", "até mais", "até logo", "encerrar"],
-            "answer": "Até logo! Tenha um ótimo dia de trabalho."
         }
     ]
 }
