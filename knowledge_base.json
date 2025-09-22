@@ -46,16 +46,16 @@
             "follow_up": "Posso detalhar outro benefício para você?"
         },
         {
-            "tag": "plano de saúde",
+            "tag": "plano_de_saude",
             "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["benefícios", "plano de saúde", "plano odontológico", "odontológico"],
-            "answer": "Contamos com o Plano de Saúde da Hapvida, onde Enfermaria custa R$476,05 e Apartamento no valor de R$550,60 , já nosso Plano Odontológico é o Uniodonto Titulares e dependentes no Valor R$30,92",
+            "keywords": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto"],
+            "answer": "Contamos com o Plano de Saúde da Hapvida, onde Enfermaria custa R$476,05 e Apartamento no valor de R$550,60. Já nosso Plano Odontológico é o Uniodonto para titulares e dependentes no valor de R$30,92.",
             "follow_up": "Posso detalhar outro benefício para você?"
         },
         {
-            "tag": "vale transporte",
+            "tag": "vale_transporte",
             "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["benefícios", "vt", "vale transporte"],
+            "keywords": ["vt", "vale transporte", "transporte"],
             "answer": "O Vale Transporte é concedido ao funcionário que utiliza o sistema de transporte coletivo para deslocamento da residência ao trabalho e vice versa. Será descontado 6% do salário do colaborador referente ao vale transporte.",
             "follow_up": "Posso detalhar outro benefício para você?"
         },
@@ -64,11 +64,11 @@
             "keywords": ["horário", "hora", "expediente", "entrada", "saída"],
             "answer": "O horário de trabalho padrão é das 9h às 18h, com uma hora de almoço.",
             "follow_up": "Isso responde sua pergunta?"
-        },       
-	{
+        },
+        {
             "tag": "localizacao",
             "keywords": ["onde fica", "localização", "local", "endereço"],
-            "answer": "Nossa Sede é situada no endereço Av. Contorno 2185, Goiânia,GO, 74055-140, e o nosso Hospital fica situado na Av. Atilio Correia Lima 1549, Goiânia, GO, 74425-030",
+            "answer": "Nossa Sede é situada no endereço Av. Contorno 2185, Goiânia, GO, 74055-140, e o nosso Hospital fica situado na Av. Atilio Correia Lima 1549, Goiânia, GO, 74425-030.",
             "follow_up": "Precisa de ajuda para chegar lá?"
         },
         {
