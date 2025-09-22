@@ -34,29 +34,8 @@
         {
             "tag": "vale_refeicao_contexto",
             "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["vale refeição", "vr", "ticket", "comida", "valor vale"],
-            "answer": "O valor do vale refeição é R$700,00 mensais.",
-            "follow_up": "Posso detalhar outro benefício para você?"
-        },
-        {
-            "tag": "vale_refeicao_desconto",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["desconto", "vale refeição","vr", "valor desconto"],
-            "answer": "É descontado o valor referente a R$20,00 (vinte reais) por mês.",
-            "follow_up": "Posso detalhar outro benefício para você?"
-        },
-        {
-            "tag": "plano de saúde",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["benefícios", "plano de saúde", "plano odontológico", "odontológico"],
-            "answer": "Contamos com o Plano de Saúde da Hapvida, onde Enfermaria custa R$476,05 e Apartamento no valor de R$550,60 , já nosso Plano Odontológico é o Uniodonto Titulares e dependentes no Valor R$30,92",
-            "follow_up": "Posso detalhar outro benefício para você?"
-        },
-        {
-            "tag": "vale transporte",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["benefícios", "vt", "vale transporte"],
-            "answer": "O Vale Transporte é concedido ao funcionário que utiliza o sistema de transporte coletivo para deslocamento da residência ao trabalho e vice versa. Será descontado 6% do salário do colaborador referente ao vale transporte.",
+            "keywords": ["vale refeição", "vr", "ticket", "comida"],
+            "answer": "O valor do vale refeição é de 30 reais por dia útil.",
             "follow_up": "Posso detalhar outro benefício para você?"
         },
         {
@@ -64,12 +43,6 @@
             "keywords": ["horário", "hora", "expediente", "entrada", "saída"],
             "answer": "O horário de trabalho padrão é das 9h às 18h, com uma hora de almoço.",
             "follow_up": "Isso responde sua pergunta?"
-        },       
-	{
-            "tag": "localizacao",
-            "keywords": ["onde fica", "localização", "local", "endereço"],
-            "answer": "Nossa Sede é situada no endereço Av. Contorno 2185, Goiânia,GO, 74055-140, e o nosso Hospital fica situado na Av. Atilio Correia Lima 1549, Goiânia, GO, 74425-030
-            "follow_up": "Precisa de ajuda para chegar lá?"
         },
         {
             "tag": "agradecimento",
