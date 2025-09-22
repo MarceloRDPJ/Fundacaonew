@@ -160,13 +160,22 @@ function addToChatLog(sender, message) {
 }
 
 // --- LÓGICA DO ASSISTENTE DE IA (CHAT) ---
-function speak(text, onEndCallback) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';
-    utterance.onend = () => { if (onEndCallback) onEndCallback(); };
-    window.speechSynthesis.speak(utterance);
+/**
+ * Toca um arquivo de áudio vindo de uma URL.
+ */
+function speak(audioUrl, onEndCallback) {
+    const audio = new Audio(audioUrl);
+    audio.play();
+    audio.onended = () => {
+        if (onEndCallback) {
+            onEndCallback();
+        }
+    };
 }
+
+/**
+ * Envia a pergunta do usuário para o back-end e processa a resposta.
+ */
 function getAnswerFromAI(question) {
     status.textContent = "Pensando...";
     fetch('/ask', {
@@ -174,20 +183,32 @@ function getAnswerFromAI(question) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: question, context: currentContext })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Falha na rede ou erro no servidor');
+        }
+        return response.json();
+    })
     .then(data => {
-        const answer = data.answer;
+        const answerText = data.answer;
+        const audioUrl = data.audio_url; // A URL do áudio vinda do nosso backend
         currentContext = data.context;
-        addToChatLog('bot', answer);
-        speak(answer, () => {
+
+        addToChatLog('bot', answerText); // Mostra o texto no chat
+        
+        // Toca o áudio recebido do ElevenLabs
+        speak(audioUrl, () => {
             status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-            document.getElementById('questionInput').focus();
+            if(document.getElementById('questionInput')) {
+                document.getElementById('questionInput').focus();
+            }
         });
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
         const errorMessage = "Desculpe, estou com problemas de conexão...";
         addToChatLog('bot', errorMessage);
-        speak(errorMessage);
+        // Não tentamos falar o erro se a conexão falhou
+        status.textContent = "Status: Erro de comunicação.";
     });
 }
