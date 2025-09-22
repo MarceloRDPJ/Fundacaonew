@@ -10,7 +10,7 @@ body {
     padding: 20px 0;
 }
 
-.container {
+#main-content .container { /* Aplicando o estilo do container apenas ao conteúdo principal */
     text-align: center;
     background-color: #fff;
     padding: 30px 40px;
@@ -20,10 +20,9 @@ body {
     max-width: 700px;
 }
 
-/* NOVO: Estilo para o contêiner do player do YouTube */
 #video-player-container {
     position: relative;
-    padding-bottom: 56.25%; /* Proporção 16:9 */
+    padding-bottom: 56.25%;
     height: 0;
     overflow: hidden;
     margin-bottom: 20px;
@@ -38,15 +37,40 @@ body {
     height: 100%;
 }
 
-
-#questionPrompt {
-    margin: 20px 0;
-    padding: 20px;
-    background-color: #e9ecef;
-    border-radius: 8px;
+/* --- Estilos para a Assistente no canto --- */
+#assistant-container {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+    z-index: 999;
 }
 
-#questionPrompt button {
+.speech-bubble {
+    width: 280px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    position: relative;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.speech-bubble::after { /* A "cauda" do balão */
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    right: 30px;
+    border-width: 10px 10px 0;
+    border-style: solid;
+    border-color: #fff transparent;
+}
+.speech-bubble p {
+    margin: 0 0 15px 0;
+}
+.speech-bubble button {
     background-color: #007bff;
     color: white;
     border: none;
@@ -55,73 +79,82 @@ body {
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    margin: 0 10px;
 }
-
-#questionPrompt button:hover {
+.speech-bubble button:hover {
     background-color: #0056b3;
 }
 
-#questionPrompt #noButton {
-    background-color: #6c757d;
-}
-#questionPrompt #noButton:hover {
-    background-color: #5a6268;
-}
-
-#qaSection {
-    margin: 20px 0;
-}
-
-.question-form {
+/* NOVO: Estilo para o formulário de nome dentro do balão */
+.inline-form {
     display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
+    gap: 5px;
 }
-
-#questionInput {
+.inline-form input {
     flex-grow: 1;
-    padding: 12px;
-    font-size: 16px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    padding: 8px;
+    font-size: 14px;
+}
+.inline-form button {
+    padding: 8px 15px;
 }
 
-#sendButton {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 12px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+
+/* --- Estilos para o Orbe da Assistente --- */
+#assistant-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #5d9eff 0%, #3a7dff 100%);
+    box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
+    position: relative;
+    animation: pulse 4s ease-in-out infinite;
+}
+#assistant-avatar::before,
+#assistant-avatar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    box-shadow: 0 0 30px #7b68ee;
+    z-index: -1;
+}
+#assistant-avatar::before {
+    width: 100%;
+    height: 100%;
+    animation: pulse-outer 4s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+#assistant-avatar::after {
+    width: 120%;
+    height: 120%;
+    animation: pulse-outer 4s ease-in-out infinite;
+    animation-delay: 1s;
+}
+@keyframes pulse {
+    50% { transform: scale(1.05); box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; }
+}
+@keyframes pulse-outer {
+    50% { opacity: 0.3; }
 }
 
-#sendButton:hover {
-    background-color: #218838;
-}
 
-#continueButton {
-    background-color: #ffc107;
-    color: #212529;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 10px;
+/* --- Estilos para os elementos internos da integração --- */
+.hidden { display: none; }
+#questionPrompt, #qaSection, #finalSection { /* Estilos comuns */
+    margin: 20px 0;
+    padding: 20px;
+    background-color: #e9ecef;
+    border-radius: 8px;
 }
-
-#continueButton:hover {
-    background-color: #e0a800;
+.question-form, #continueButton { margin-top: 10px; }
+/* ... (outros estilos internos que você já tinha) ... */
+#questionPrompt button, .button-link, #continueButton, #sendButton {
+    /* (Estilos dos botões que você já tinha) */
 }
-
-.status {
-    margin-top: 10px;
-}
-
 .chat-log-container {
     margin-top: 20px;
     background-color: #f8f9fa;
@@ -133,176 +166,12 @@ body {
     overflow-y: auto;
     text-align: left;
 }
-
 #chatLog p {
-    margin: 0 0 10px 0;
-    padding: 8px;
-    border-radius: 5px;
-    word-wrap: break-word;
+    margin: 0 0 10px 0; padding: 8px; border-radius: 5px; word-wrap: break-word;
 }
-
 #chatLog .user-message {
-    background-color: #e2f1ff;
-    font-weight: bold;
+    background-color: #e2f1ff; font-weight: bold;
 }
-
 #chatLog .bot-message {
     background-color: #f0f0f0;
-}
-
-.hidden {
-    display: none;
-}
-
-#finalSection {
-    margin-top: 20px;
-    padding: 30px;
-    background-color: #e9ecef;
-    border-radius: 8px;
-}
-
-.button-link {
-    display: inline-block;
-    background-color: #28a745;
-    color: white !important;
-    text-decoration: none;
-    padding: 15px 30px;
-    font-size: 18px;
-    font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    margin-top: 15px;
-}
-
-.button-link:hover {
-    background-color: #218838;
-}
-
-/* --- ESTILOS PARA A TELA DE BOAS-VINDAS --- */
-
-#welcome-screen {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000; /* Garante que fique por cima de tudo */
-}
-
-.welcome-box {
-    background-color: white;
-    padding: 40px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    text-align: center;
-    width: 90%;
-    max-width: 500px;
-}
-
-.welcome-box h1 {
-    margin-top: 0;
-}
-
-#name-input {
-    width: 80%;
-    padding: 12px;
-    font-size: 16px;
-    margin-top: 20px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-#start-onboarding-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    font-size: 18px;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 20px;
-    transition: background-color 0.3s;
-}
-
-#start-onboarding-btn:hover {
-    background-color: #0056b3;
-}
-
-/* --- ESTILOS PARA O AVATAR FUTURISTA (ORBE) --- */
-
-/* A base do nosso orbe */
-#assistant-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%; /* Transforma o div em um círculo perfeito */
-    background: radial-gradient(circle, #5d9eff 0%, #3a7dff 100%); /* Um gradiente azul para dar profundidade */
-    box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99; /* Brilho interno e externo */
-    position: relative; /* Necessário para posicionar as camadas de animação */
-
-    /* Aplica a animação que vamos criar abaixo */
-    animation: pulse 4s ease-in-out infinite;
-}
-
-/* Camadas extras de animação para um efeito mais complexo */
-/* Usamos pseudo-elementos para criar mais dois círculos animados atrás do principal */
-#assistant-avatar::before,
-#assistant-avatar::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    box-shadow: 0 0 30px #7b68ee; /* Um brilho mais roxo */
-    z-index: -1; /* Coloca os brilhos atrás do círculo principal */
-}
-
-/* Camada 1 (::before) */
-#assistant-avatar::before {
-    width: 100%;
-    height: 100%;
-    animation: pulse-outer 4s ease-in-out infinite;
-    animation-delay: 0.5s; /* Começa a animação um pouco depois */
-}
-
-/* Camada 2 (::after) */
-#assistant-avatar::after {
-    width: 120%;
-    height: 120%;
-    animation: pulse-outer 4s ease-in-out infinite;
-    animation-delay: 1s; /* Começa ainda mais tarde */
-}
-
-
-/* A definição da nossa animação "pulsante" */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
-    }
-    50% {
-        transform: scale(1.05); /* Aumenta um pouco de tamanho */
-        box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; /* Aumenta o brilho */
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
-    }
-}
-
-@keyframes pulse-outer {
-    0% {
-        opacity: 0.7;
-    }
-    50% {
-        opacity: 0.3;
-    }
-    100% {
-        opacity: 0.7;
-    }
 }

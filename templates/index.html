@@ -8,24 +8,15 @@
 </head>
 <body>
 
-    <div id="welcome-screen">
-        <div class="welcome-box">
-            <h1>Bem-vindo(a) à Integração</h1>
-            <p>Para começarmos, por favor, digite seu nome abaixo.</p>
-            <input type="text" id="name-input" placeholder="Seu nome" autocomplete="off">
-            <button id="start-onboarding-btn">Iniciar Integração</button>
-        </div>
-    </div>
-
     <div id="main-content" class="hidden">
         <div class="container">
-            <h1 id="videoTitle">Tópico 1: Boas-vindas</h1>
+            <h1 id="videoTitle"></h1>
             <div id="video-player-container">
                 <div id="youtubePlayer"></div>
             </div>
             <div id="finalSection" class="hidden">
                  <h2>Onboarding Concluído!</h2>
-                 <p>Parabéns, você finalizou a primeira parte da sua integração. Agora, para concluir, realize a prova de conhecimentos no link abaixo.</p>
+                 <p>Parabéns, você finalizou a primeira parte da sua integração...</p>
                  <a href="#" id="proofLink" class="button-link" target="_blank" rel="noopener noreferrer">Acessar a Prova</a>
             </div>
             <div id="questionPrompt" class="hidden">
@@ -40,17 +31,20 @@
                 </form>
                 <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
             </div>
-            <p id="status" class="status">Status:</p>
+            <p id="status" class="status"></p>
             <div class="chat-log-container">
                 <div id="chatLog"></div>
             </div>
         </div>
     </div>
 
-    <div id="assistant-container" class="hidden">
+    <div id="assistant-container">
         <div id="assistant-bubble" class="speech-bubble">
-            <p id="assistant-text">Olá! Vamos começar?</p>
-            <button id="start-journey-btn">Vamos Começar!</button>
+            <p>Olá! Para começarmos, qual o seu nome?</p>
+            <div class="inline-form">
+                <input type="text" id="name-input" placeholder="Digite seu nome completo">
+                <button id="submit-name-btn">OK</button>
+            </div>
         </div>
         <div id="assistant-avatar"></div>
     </div>

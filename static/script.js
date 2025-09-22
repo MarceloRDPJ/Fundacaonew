@@ -1,12 +1,9 @@
 // --- CONFIGURAÇÃO INICIAL ---
-// Referências para todos os elementos HTML
-const welcomeScreen = document.getElementById('welcome-screen');
-const nameInput = document.getElementById('name-input');
-const startOnboardingBtn = document.getElementById('start-onboarding-btn');
 const mainContent = document.getElementById('main-content');
 const assistantContainer = document.getElementById('assistant-container');
-const assistantText = document.getElementById('assistant-text');
-const startJourneyBtn = document.getElementById('start-journey-btn');
+const assistantBubble = document.getElementById('assistant-bubble');
+const nameInput = document.getElementById('name-input');
+const submitNameBtn = document.getElementById('submit-name-btn');
 
 const videoTitle = document.getElementById('videoTitle');
 const questionPrompt = document.getElementById('questionPrompt');
@@ -23,49 +20,48 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    // Lembre-se de colocar seus IDs de vídeo corretos e limpos aqui
     { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" },
-    { title: "Tópico 3: Ferramentas de Trabalho", id: "ID_DO_SEU_VIDEO_3_AQUI" }
+    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
 ];
 const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
 
-// Variáveis de estado
-let currentVideoIndex = -1; // Começa em -1 para que a primeira chamada seja para o índice 0
+let currentVideoIndex = -1;
 let currentContext = null;
 let player;
 let userName = "";
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
 
-// Evento do botão "Iniciar Integração" na tela de boas-vindas
-startOnboardingBtn.addEventListener('click', () => {
+window.onload = () => {
+    speak("Olá! Para começarmos, qual o seu nome?");
+};
+
+// Evento do botão que envia o nome
+submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName === "") {
-        alert("Por favor, digite seu nome para continuar.");
+        alert("Por favor, digite seu nome.");
         return;
     }
 
-    welcomeScreen.classList.add('hidden');      // <-- ESTA É A LINHA CRÍTICA QUE ESCONDE O POP-UP
-    assistantContainer.classList.remove('hidden'); // Mostra o avatar da assistente
-
-    const welcomeMessage = `Olá, ${userName}! Sou a C.I.A., sua Companheira de Integração Artificial. Estou aqui para te guiar. Pront(a) para começar?`;
-    assistantText.textContent = welcomeMessage;
+    // Muda o conteúdo do balão para a próxima etapa
+    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Estou aqui para te guiar. Quando estiver pronto(a), vamos começar.`;
+    assistantBubble.innerHTML = `
+        <p>${welcomeMessage}</p>
+        <button id="start-journey-btn">Vamos Começar!</button>
+    `;
     speak(welcomeMessage);
-});
 
-// Evento do botão "Vamos Começar!" da assistente
-startJourneyBtn.addEventListener('click', () => {
-    assistantContainer.classList.add('hidden'); // Esconde a assistente
-    mainContent.classList.remove('hidden');     // Mostra o conteúdo principal
-    playNextVideo();                            // Inicia a jornada de vídeos
+    // Precisamos adicionar o evento ao novo botão que acabamos de criar
+    document.getElementById('start-journey-btn').addEventListener('click', () => {
+        assistantContainer.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+        playNextVideo();
+    });
 });
-
 
 // --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
-function onYouTubeIframeAPIReady() {
-    // A inicialização do player agora acontece sob demanda
-}
+function onYouTubeIframeAPIReady() { /* A inicialização agora acontece sob demanda */ }
 
 function loadVideoByIndex(index) {
     if (index < playlist.length) {
@@ -115,7 +111,6 @@ function playNextVideo() {
         finalSection.classList.remove('hidden');
     }
 }
-
 function addToChatLog(sender, message) {
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
@@ -124,7 +119,6 @@ function addToChatLog(sender, message) {
     chatLog.appendChild(messageElement);
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
-
 // --- EVENTOS DOS BOTÕES INTERNOS ---
 noButton.addEventListener('click', () => {
     if(player && typeof player.stopVideo === 'function') player.stopVideo();
@@ -157,7 +151,6 @@ function speak(text, onEndCallback) {
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
 }
-
 function getAnswerFromAI(question) {
     status.textContent = "Pensando...";
     fetch('/ask', {
