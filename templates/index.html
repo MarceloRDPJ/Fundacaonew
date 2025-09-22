@@ -14,31 +14,22 @@
             <div id="video-player-container">
                 <div id="youtubePlayer"></div>
             </div>
+            
             <div id="finalSection" class="hidden">
                  <h2>Onboarding Concluído!</h2>
                  <p>Parabéns, você finalizou a primeira parte da sua integração...</p>
                  <a href="#" id="proofLink" class="button-link" target="_blank" rel="noopener noreferrer">Acessar a Prova</a>
             </div>
-            <div id="questionPrompt" class="hidden">
-                <p>Você ficou com alguma dúvida sobre este tópico?</p>
-                <button id="yesButton">Sim, tenho uma dúvida</button>
-                <button id="noButton">Não, tudo certo!</button>
-            </div>
-            <div id="qaSection" class="hidden">
-                <form id="questionForm" class="question-form">
-                    <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
-                    <button type="submit" id="sendButton">Enviar</button>
-                </form>
-                <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
-            </div>
+            
             <p id="status" class="status"></p>
-            <div class="chat-log-container">
+            
+            <div class="chat-log-container hidden">
                 <div id="chatLog"></div>
             </div>
         </div>
     </div>
 
-    <div id="assistant-container">
+    <div id="assistant-container" class="assistant-centered">
         <div id="assistant-bubble" class="speech-bubble">
             <p>Olá! Para começarmos, qual o seu nome?</p>
             <div class="inline-form">

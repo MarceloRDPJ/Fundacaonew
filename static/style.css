@@ -10,7 +10,7 @@ body {
     padding: 20px 0;
 }
 
-#main-content .container { /* Aplicando o estilo do container apenas ao conteúdo principal */
+#main-content .container {
     text-align: center;
     background-color: #fff;
     padding: 30px 40px;
@@ -21,33 +21,39 @@ body {
 }
 
 #video-player-container {
-    position: relative;
-    padding-bottom: 56.25%;
-    height: 0;
-    overflow: hidden;
-    margin-bottom: 20px;
-    background-color: #000;
-    border-radius: 8px;
+    position: relative; padding-bottom: 56.25%; height: 0;
+    overflow: hidden; margin-bottom: 20px; background-color: #000; border-radius: 8px;
 }
 #video-player-container #youtubePlayer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
 }
 
-/* --- MUDANÇA: Centraliza a assistente na tela --- */
+/* --- Estilos para a Assistente e sua Animação --- */
 #assistant-container {
     position: fixed;
+    display: flex;
+    z-index: 999;
+    /* A MÁGICA DA ANIMAÇÃO: qualquer mudança de posição, tamanho, etc. levará 0.8s */
+    transition: all 0.8s ease-in-out;
+}
+
+/* NOVO: Classe para o estado centralizado */
+.assistant-centered {
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%); /* O truque para centralização perfeita */
-    display: flex;
-    align-items: center; /* Alinha os itens no centro */
-    flex-direction: column; /* Empilha o balão em cima do orbe */
-    gap: 20px; /* Espaçamento entre o balão e o orbe */
-    z-index: 999;
+    transform: translate(-50%, -50%);
+    align-items: center;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* NOVO: Classe para o estado no canto */
+.assistant-corner {
+    bottom: 20px;
+    right: 30px;
+    align-items: flex-end;
+    flex-direction: row; /* Balão fica ao lado do orbe */
+    gap: 15px;
 }
 
 .speech-bubble {
@@ -57,125 +63,63 @@ body {
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     position: relative;
-    margin-bottom: 20px;
     text-align: center;
+    /* A transição para o balão aparecer e sumir suavemente */
+    transition: opacity 0.5s, transform 0.5s;
 }
-/* MUDANÇA: Ajusta a cauda do balão para a posição central */
-.speech-bubble::after { /* A "cauda" do balão */
-    content: '';
-    position: absolute;
-    bottom: -10px; /* Continua saindo da parte de baixo */
-    left: 50%; /* Agora fica no meio do balão */
-    transform: translateX(-50%); /* Ajuste para centralizar perfeitamente */
-    border-width: 10px 10px 0;
-    border-style: solid;
-    border-color: #fff transparent;
+.assistant-corner .speech-bubble {
+    margin-bottom: 20px;
 }
-.speech-bubble p {
-    margin: 0 0 15px 0;
-}
-.speech-bubble button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-.speech-bubble button:hover {
-    background-color: #0056b3;
+.speech-bubble.hidden {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none; /* Impede cliques no balão escondido */
 }
 
-/* NOVO: Estilo para o formulário de nome dentro do balão */
-.inline-form {
-    display: flex;
-    gap: 5px;
+/* Ajusta a "cauda" do balão para ambas as posições */
+.speech-bubble::after {
+    content: ''; position: absolute; border-width: 10px 10px 0;
+    border-style: solid; border-color: #fff transparent;
 }
-.inline-form input {
-    flex-grow: 1;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 8px;
-    font-size: 14px;
+.assistant-centered .speech-bubble::after {
+    bottom: -10px; left: 50%; transform: translateX(-50%);
 }
-.inline-form button {
-    padding: 8px 15px;
+.assistant-corner .speech-bubble::after {
+    bottom: -10px; right: 30px;
 }
 
+.inline-form { display: flex; gap: 5px; }
+.inline-form input { flex-grow: 1; border: 1px solid #ccc; border-radius: 5px; padding: 8px; font-size: 14px; }
+.inline-form button { padding: 8px 15px; }
 
-/* --- Estilos para o Orbe da Assistente --- */
+/* --- Estilos para o Orbe da Assistente (sem alterações) --- */
 #assistant-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
+    width: 80px; height: 80px; border-radius: 50%;
     background: radial-gradient(circle, #5d9eff 0%, #3a7dff 100%);
     box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
-    position: relative;
-    animation: pulse 4s ease-in-out infinite;
+    position: relative; animation: pulse 4s ease-in-out infinite;
 }
-#assistant-avatar::before,
-#assistant-avatar::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border-radius: 50%;
-    box-shadow: 0 0 30px #7b68ee;
-    z-index: -1;
+#assistant-avatar::before, #assistant-avatar::after {
+    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    border-radius: 50%; box-shadow: 0 0 30px #7b68ee; z-index: -1;
 }
-#assistant-avatar::before {
-    width: 100%;
-    height: 100%;
-    animation: pulse-outer 4s ease-in-out infinite;
-    animation-delay: 0.5s;
-}
-#assistant-avatar::after {
-    width: 120%;
-    height: 120%;
-    animation: pulse-outer 4s ease-in-out infinite;
-    animation-delay: 1s;
-}
-@keyframes pulse {
-    50% { transform: scale(1.05); box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; }
-}
-@keyframes pulse-outer {
-    50% { opacity: 0.3; }
-}
+#assistant-avatar::before { width: 100%; height: 100%; animation: pulse-outer 4s ease-in-out infinite; animation-delay: 0.5s; }
+#assistant-avatar::after { width: 120%; height: 120%; animation: pulse-outer 4s ease-in-out infinite; animation-delay: 1s; }
+@keyframes pulse { 50% { transform: scale(1.05); box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; } }
+@keyframes pulse-outer { 50% { opacity: 0.3; } }
 
-
-/* --- Estilos para os elementos internos da integração --- */
+/* --- Outros Estilos --- */
 .hidden { display: none; }
-#questionPrompt, #qaSection, #finalSection { /* Estilos comuns */
-    margin: 20px 0;
-    padding: 20px;
-    background-color: #e9ecef;
-    border-radius: 8px;
+.chat-log-container.hidden { display: none; }
+#finalSection { margin: 20px 0; padding: 30px; background-color: #e9ecef; border-radius: 8px; }
+.button-link { display: inline-block; background-color: #28a745; color: white !important; text-decoration: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; margin-top: 15px; }
+.button-link:hover { background-color: #218838; }
+.chat-log-container { margin-top: 20px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; min-height: 100px; max-height: 200px; overflow-y: auto; text-align: left; }
+#chatLog p { margin: 0 0 10px 0; padding: 8px; border-radius: 5px; word-wrap: break-word; }
+#chatLog .user-message { background-color: #e2f1ff; font-weight: bold; }
+#chatLog .bot-message { background-color: #f0f0f0; }
+.speech-bubble button, #qaSection button { /* Estilos gerais de botões */
+    background-color: #007bff; color: white; border: none; padding: 10px 20px; font-size: 16px;
+    border-radius: 5px; cursor: pointer; transition: background-color 0.3s; margin: 5px;
 }
-.question-form, #continueButton { margin-top: 10px; }
-/* ... (outros estilos internos que você já tinha) ... */
-#questionPrompt button, .button-link, #continueButton, #sendButton {
-    /* (Estilos dos botões que você já tinha) */
-}
-.chat-log-container {
-    margin-top: 20px;
-    background-color: #f8f9fa;
-    border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 15px;
-    min-height: 100px;
-    max-height: 200px;
-    overflow-y: auto;
-    text-align: left;
-}
-#chatLog p {
-    margin: 0 0 10px 0; padding: 8px; border-radius: 5px; word-wrap: break-word;
-}
-#chatLog .user-message {
-    background-color: #e2f1ff; font-weight: bold;
-}
-#chatLog .bot-message {
-    background-color: #f0f0f0;
-}
+.speech-bubble button:hover, #qaSection button:hover { background-color: #0056b3; }

@@ -4,16 +4,9 @@ const assistantContainer = document.getElementById('assistant-container');
 const assistantBubble = document.getElementById('assistant-bubble');
 const nameInput = document.getElementById('name-input');
 const submitNameBtn = document.getElementById('submit-name-btn');
-
 const videoTitle = document.getElementById('videoTitle');
-const questionPrompt = document.getElementById('questionPrompt');
-const yesButton = document.getElementById('yesButton');
-const noButton = document.getElementById('noButton');
-const qaSection = document.getElementById('qaSection');
-const questionForm = document.getElementById('questionForm');
-const questionInput = document.getElementById('questionInput');
-const continueButton = document.getElementById('continueButton');
 const status = document.getElementById('status');
+const chatLogContainer = document.querySelector('.chat-log-container');
 const chatLog = document.getElementById('chatLog');
 const finalSection = document.getElementById('finalSection');
 const proofLink = document.getElementById('proofLink');
@@ -31,34 +24,33 @@ let player;
 let userName = "";
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
-
 window.onload = () => {
     speak("Olá! Para começarmos, qual o seu nome?");
 };
 
-// Evento do botão que envia o nome
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
     if (userName === "") {
-        alert("Por favor, digite seu nome completo.");
+        alert("Por favor, digite seu nome.");
         return;
     }
-
-    // Muda o conteúdo do balão para a próxima etapa
-    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Estou aqui para te guiar. Quando estiver pronto(a), vamos começar.`;
-    assistantBubble.innerHTML = `
-        <p>${welcomeMessage}</p>
-        <button id="start-journey-btn">Vamos Começar!</button>
-    `;
+    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
+    updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
-
-    // Precisamos adicionar o evento ao novo botão que acabamos de criar
-    document.getElementById('start-journey-btn').addEventListener('click', () => {
-        assistantContainer.classList.add('hidden');
-        mainContent.classList.remove('hidden');
-        playNextVideo();
-    });
 });
+
+function startJourney() {
+    window.speechSynthesis.cancel(); // Interrompe a fala
+    assistantBubble.classList.add('hidden'); // Esconde o balão
+    
+    // Anima a assistente para o canto
+    assistantContainer.classList.remove('assistant-centered');
+    assistantContainer.classList.add('assistant-corner');
+    
+    // Mostra o conteúdo principal e inicia os vídeos
+    mainContent.classList.remove('hidden');
+    playNextVideo();
+}
 
 // --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
 function onYouTubeIframeAPIReady() { /* A inicialização agora acontece sob demanda */ }
@@ -67,7 +59,6 @@ function loadVideoByIndex(index) {
     if (index < playlist.length) {
         const videoData = playlist[index];
         videoTitle.textContent = videoData.title;
-        
         if (!player) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
@@ -81,29 +72,29 @@ function loadVideoByIndex(index) {
     }
 }
 
-function onPlayerReady(event) {
-    status.textContent = "Status: Reproduzindo vídeo...";
-}
+function onPlayerReady(event) { status.textContent = "Status: Reproduzindo vídeo..."; }
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
-        status.textContent = "Status: Vídeo concluído. Responda a pergunta abaixo.";
-        questionPrompt.classList.remove('hidden');
+        status.textContent = "Status: Vídeo concluído.";
+        // A assistente pergunta se há dúvidas
+        updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
+        assistantBubble.classList.remove('hidden');
     }
 }
 
 // --- FUNÇÕES DE CONTROLE DO FLUXO ---
 function playNextVideo() {
-    qaSection.classList.add('hidden');
-    questionPrompt.classList.add('hidden');
+    assistantBubble.classList.add('hidden');
+    chatLogContainer.classList.add('hidden');
     chatLog.innerHTML = '';
     currentContext = null;
-
     currentVideoIndex++;
 
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
+        assistantContainer.classList.add('hidden');
         videoTitle.classList.add('hidden');
         document.getElementById('video-player-container').classList.add('hidden');
         status.textContent = "Status: Finalizado.";
@@ -111,6 +102,54 @@ function playNextVideo() {
         finalSection.classList.remove('hidden');
     }
 }
+
+// NOVO: Função central para atualizar o conteúdo e os botões do balão
+function updateAssistantBubble(text, mode) {
+    let content = `<p>${text}</p>`;
+    if (mode === "start") {
+        content += `<button id="start-journey-btn">Vamos Começar!</button>`;
+    } else if (mode === "prompt") {
+        content += `<div><button id="post-video-yes">Sim</button><button id="post-video-no">Não</button></div>`;
+    } else if (mode === "qa") {
+        content = `
+            <div id="qaSection">
+                <form id="questionForm" class="question-form">
+                    <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
+                    <button type="submit" id="sendButton">Enviar</button>
+                </form>
+                <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
+            </div>`;
+    }
+    assistantBubble.innerHTML = content;
+    addBubbleEventListeners(mode); // Adiciona os eventos aos novos botões
+}
+
+// NOVO: Adiciona os eventos aos botões do balão, conforme o modo
+function addBubbleEventListeners(mode) {
+    if (mode === "start") {
+        document.getElementById('start-journey-btn').addEventListener('click', startJourney);
+    } else if (mode === "prompt") {
+        document.getElementById('post-video-yes').addEventListener('click', () => {
+            updateAssistantBubble("", "qa");
+            chatLogContainer.classList.remove('hidden');
+            document.getElementById('questionInput').focus();
+        });
+        document.getElementById('post-video-no').addEventListener('click', playNextVideo);
+    } else if (mode === "qa") {
+        document.getElementById('questionForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const questionInput = document.getElementById('questionInput');
+            const userQuestion = questionInput.value;
+            if (!userQuestion) return;
+            addToChatLog('user', userQuestion);
+            getAnswerFromAI(userQuestion);
+            questionInput.value = '';
+        });
+        document.getElementById('continueButton').addEventListener('click', playNextVideo);
+    }
+}
+
+
 function addToChatLog(sender, message) {
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
@@ -119,29 +158,6 @@ function addToChatLog(sender, message) {
     chatLog.appendChild(messageElement);
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
-// --- EVENTOS DOS BOTÕES INTERNOS ---
-noButton.addEventListener('click', () => {
-    if(player && typeof player.stopVideo === 'function') player.stopVideo();
-    playNextVideo();
-});
-yesButton.addEventListener('click', () => {
-    questionPrompt.classList.add('hidden');
-    qaSection.classList.remove('hidden');
-    questionInput.focus();
-    status.textContent = "Status: Faça sua(s) pergunta(s) ou clique em continuar.";
-});
-continueButton.addEventListener('click', () => {
-    if(player && typeof player.stopVideo === 'function') player.stopVideo();
-    playNextVideo();
-});
-questionForm.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const userQuestion = questionInput.value;
-    if (!userQuestion) return;
-    addToChatLog('user', userQuestion);
-    getAnswerFromAI(userQuestion);
-    questionInput.value = '';
-});
 
 // --- LÓGICA DO ASSISTENTE DE IA (CHAT) ---
 function speak(text, onEndCallback) {
@@ -163,17 +179,15 @@ function getAnswerFromAI(question) {
         const answer = data.answer;
         currentContext = data.context;
         addToChatLog('bot', answer);
-        
         speak(answer, () => {
             status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-            questionInput.focus();
+            document.getElementById('questionInput').focus();
         });
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
-        const errorMessage = "Desculpe, estou com problemas de conexão. Por favor, tente novamente ou clique em continuar.";
+        const errorMessage = "Desculpe, estou com problemas de conexão...";
         addToChatLog('bot', errorMessage);
         speak(errorMessage);
-        status.textContent = "Status: Erro de comunicação.";
     });
 }
