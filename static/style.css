@@ -1,3 +1,4 @@
+/* --- GERAL E LAYOUT --- */
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background-color: #f0f2f5;
@@ -8,6 +9,7 @@ body {
     min-height: 100vh;
     margin: 0;
     padding: 20px 0;
+    overflow: hidden; /* Evita barras de rolagem desnecessárias */
 }
 
 #main-content .container {
@@ -20,24 +22,38 @@ body {
     max-width: 700px;
 }
 
-#video-player-container {
-    position: relative; padding-bottom: 56.25%; height: 0;
-    overflow: hidden; margin-bottom: 20px; background-color: #000; border-radius: 8px;
-}
-#video-player-container #youtubePlayer {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+.hidden {
+    display: none;
 }
 
-/* --- Estilos para a Assistente e sua Animação --- */
+/* --- PLAYER DE VÍDEO --- */
+#video-player-container {
+    position: relative;
+    padding-bottom: 56.25%; /* Proporção 16:9 */
+    height: 0;
+    overflow: hidden;
+    margin-bottom: 20px;
+    background-color: #000;
+    border-radius: 8px;
+}
+
+#video-player-container #youtubePlayer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- ASSISTENTE (CONTAINER E ANIMAÇÃO) --- */
 #assistant-container {
     position: fixed;
     display: flex;
     z-index: 999;
-    /* A MÁGICA DA ANIMAÇÃO: qualquer mudança de posição, tamanho, etc. levará 0.8s */
+    /* A mágica da animação: qualquer mudança levará 0.8s */
     transition: all 0.8s ease-in-out;
 }
 
-/* NOVO: Classe para o estado centralizado */
 .assistant-centered {
     top: 50%;
     left: 50%;
@@ -47,79 +63,191 @@ body {
     gap: 20px;
 }
 
-/* NOVO: Classe para o estado no canto */
 .assistant-corner {
     bottom: 20px;
     right: 30px;
     align-items: flex-end;
-    flex-direction: row; /* Balão fica ao lado do orbe */
+    flex-direction: row;
     gap: 15px;
 }
 
+/* --- BALÃO DE FALA (SPEECH BUBBLE) --- */
 .speech-bubble {
-    width: 280px;
-    background: #fff;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    width: 320px;
+    background: linear-gradient(135deg, #f0f2f5, #ffffff);
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
     position: relative;
     text-align: center;
-    /* A transição para o balão aparecer e sumir suavemente */
     transition: opacity 0.5s, transform 0.5s;
+    border: 1px solid rgba(0, 123, 255, 0.1);
 }
+
 .assistant-corner .speech-bubble {
-    margin-bottom: 20px;
+    margin-bottom: 0; /* Alinha melhor com o orbe no canto */
 }
+
 .speech-bubble.hidden {
     opacity: 0;
     transform: scale(0.9);
     pointer-events: none; /* Impede cliques no balão escondido */
 }
 
-/* Ajusta a "cauda" do balão para ambas as posições */
+/* A "cauda" do balão de fala */
 .speech-bubble::after {
-    content: ''; position: absolute; border-width: 10px 10px 0;
-    border-style: solid; border-color: #fff transparent;
+    content: '';
+    position: absolute;
+    border-width: 12px 12px 0;
+    border-style: solid;
+    border-color: #ffffff transparent;
+    z-index: 1;
 }
 .assistant-centered .speech-bubble::after {
-    bottom: -10px; left: 50%; transform: translateX(-50%);
+    bottom: -12px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 .assistant-corner .speech-bubble::after {
-    bottom: -10px; right: 30px;
+    bottom: -12px;
+    right: 35px;
 }
 
-.inline-form { display: flex; gap: 5px; }
-.inline-form input { flex-grow: 1; border: 1px solid #ccc; border-radius: 5px; padding: 8px; font-size: 14px; }
-.inline-form button { padding: 8px 15px; }
+/* Formulário de nome dentro do balão */
+.inline-form {
+    display: flex;
+    gap: 8px;
+    margin-top: 15px;
+}
+.inline-form input {
+    flex-grow: 1;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 15px;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+.inline-form input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+    outline: none;
+}
 
-/* --- Estilos para o Orbe da Assistente (sem alterações) --- */
+/* --- ORBE DA ASSISTENTE --- */
 #assistant-avatar {
-    width: 80px; height: 80px; border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     background: radial-gradient(circle, #5d9eff 0%, #3a7dff 100%);
     box-shadow: 0 0 15px #5d9eff, 0 0 30px #5d9eff, inset 0 0 10px #ffffff99;
-    position: relative; animation: pulse 4s ease-in-out infinite;
+    position: relative;
+    animation: pulse 4s ease-in-out infinite;
 }
-#assistant-avatar::before, #assistant-avatar::after {
-    content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    border-radius: 50%; box-shadow: 0 0 30px #7b68ee; z-index: -1;
+#assistant-avatar::before,
+#assistant-avatar::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    box-shadow: 0 0 30px #7b68ee;
+    z-index: -1;
 }
-#assistant-avatar::before { width: 100%; height: 100%; animation: pulse-outer 4s ease-in-out infinite; animation-delay: 0.5s; }
-#assistant-avatar::after { width: 120%; height: 120%; animation: pulse-outer 4s ease-in-out infinite; animation-delay: 1s; }
-@keyframes pulse { 50% { transform: scale(1.05); box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; } }
-@keyframes pulse-outer { 50% { opacity: 0.3; } }
+#assistant-avatar::before {
+    width: 100%;
+    height: 100%;
+    animation: pulse-outer 4s ease-in-out infinite;
+    animation-delay: 0.5s;
+}
+#assistant-avatar::after {
+    width: 120%;
+    height: 120%;
+    animation: pulse-outer 4s ease-in-out infinite;
+    animation-delay: 1s;
+}
+@keyframes pulse {
+    50% { transform: scale(1.05); box-shadow: 0 0 25px #4d8fff, 0 0 50px #4d8fff, inset 0 0 15px #ffffffcc; }
+}
+@keyframes pulse-outer {
+    50% { opacity: 0.3; }
+}
 
-/* --- Outros Estilos --- */
-.hidden { display: none; }
-.chat-log-container.hidden { display: none; }
-#finalSection { margin: 20px 0; padding: 30px; background-color: #e9ecef; border-radius: 8px; }
-.button-link { display: inline-block; background-color: #28a745; color: white !important; text-decoration: none; padding: 15px 30px; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: background-color 0.3s; margin-top: 15px; }
-.button-link:hover { background-color: #218838; }
-.chat-log-container { margin-top: 20px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; min-height: 100px; max-height: 200px; overflow-y: auto; text-align: left; }
-#chatLog p { margin: 0 0 10px 0; padding: 8px; border-radius: 5px; word-wrap: break-word; }
-#chatLog .user-message { background-color: #e2f1ff; font-weight: bold; }
-#chatLog .bot-message { background-color: #f0f0f0; }
-.speech-bubble button, #qaSection button { /* Estilos gerais de botões */
-    background-color: #007bff; color: white; border: none; padding: 10px 20px; font-size: 16px;
-    border-radius: 5px; cursor: pointer; transition: background-color 0.3s; margin: 5px;
+
+/* --- CONTEÚDO DA JORNADA (CHAT, BOTÕES, ETC.) --- */
+.status {
+    margin-top: 10px;
 }
-.speech-bubble button:hover, #qaSection button:hover { background-color: #0056b3; }
+
+.chat-log-container {
+    margin-top: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 100px;
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+}
+#chatLog p {
+    margin: 0 0 10px 0;
+    padding: 8px;
+    border-radius: 5px;
+    word-wrap: break-word;
+}
+#chatLog .user-message {
+    background-color: #e2f1ff;
+    font-weight: bold;
+}
+#chatLog .bot-message {
+    background-color: #f0f0f0;
+}
+
+/* Estilos para a seção final */
+#finalSection {
+    margin: 20px 0;
+    padding: 30px;
+    background-color: #e9ecef;
+    border-radius: 8px;
+}
+.button-link {
+    display: inline-block;
+    background-color: #28a745;
+    color: white !important;
+    text-decoration: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 15px;
+}
+.button-link:hover {
+    background-color: #218838;
+}
+
+/* Estilos gerais para botões */
+.speech-bubble button, #qaSection button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.1s ease-in-out;
+    margin: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.speech-bubble button:hover, #qaSection button:hover {
+    background-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+}
+.inline-form button {
+    padding: 10px 20px;
+    font-size: 15px;
+}
