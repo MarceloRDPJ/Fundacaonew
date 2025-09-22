@@ -13,15 +13,26 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
+    { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
+    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
 ];
-const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
+const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI";
+
+let ptBrVoices = []; // Variável para as vozes do navegador
 
 let currentVideoIndex = -1;
 let currentContext = null;
 let player;
 let userName = "";
+
+// --- LÓGICA PARA CARREGAR AS VOZES DO NAVEGADOR ---
+function loadVoices() {
+    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+}
+loadVoices();
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
 window.onload = () => {
@@ -34,26 +45,22 @@ submitNameBtn.addEventListener('click', () => {
         alert("Por favor, digite seu nome.");
         return;
     }
-    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
+    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Estou aqui para te guiar. Quando estiver pronto(a), vamos começar.`;
     updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
 });
 
 function startJourney() {
-    window.speechSynthesis.cancel(); // Interrompe a fala
-    assistantBubble.classList.add('hidden'); // Esconde o balão
-    
-    // Anima a assistente para o canto
+    window.speechSynthesis.cancel();
+    assistantBubble.classList.add('hidden');
     assistantContainer.classList.remove('assistant-centered');
     assistantContainer.classList.add('assistant-corner');
-    
-    // Mostra o conteúdo principal e inicia os vídeos
     mainContent.classList.remove('hidden');
     playNextVideo();
 }
 
 // --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
-function onYouTubeIframeAPIReady() { /* A inicialização agora acontece sob demanda */ }
+function onYouTubeIframeAPIReady() {}
 
 function loadVideoByIndex(index) {
     if (index < playlist.length) {
@@ -77,7 +84,6 @@ function onPlayerReady(event) { status.textContent = "Status: Reproduzindo víde
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
-        // A assistente pergunta se há dúvidas
         updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
         assistantBubble.classList.remove('hidden');
     }
@@ -90,7 +96,6 @@ function playNextVideo() {
     chatLog.innerHTML = '';
     currentContext = null;
     currentVideoIndex++;
-
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
@@ -103,7 +108,6 @@ function playNextVideo() {
     }
 }
 
-// NOVO: Função central para atualizar o conteúdo e os botões do balão
 function updateAssistantBubble(text, mode) {
     let content = `<p>${text}</p>`;
     if (mode === "start") {
@@ -121,10 +125,9 @@ function updateAssistantBubble(text, mode) {
             </div>`;
     }
     assistantBubble.innerHTML = content;
-    addBubbleEventListeners(mode); // Adiciona os eventos aos novos botões
+    addBubbleEventListeners(mode);
 }
 
-// NOVO: Adiciona os eventos aos botões do balão, conforme o modo
 function addBubbleEventListeners(mode) {
     if (mode === "start") {
         document.getElementById('start-journey-btn').addEventListener('click', startJourney);
@@ -149,7 +152,6 @@ function addBubbleEventListeners(mode) {
     }
 }
 
-
 function addToChatLog(sender, message) {
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
@@ -160,22 +162,17 @@ function addToChatLog(sender, message) {
 }
 
 // --- LÓGICA DO ASSISTENTE DE IA (CHAT) ---
-/**
- * Toca um arquivo de áudio vindo de uma URL.
- */
-function speak(audioUrl, onEndCallback) {
-    const audio = new Audio(audioUrl);
-    audio.play();
-    audio.onended = () => {
-        if (onEndCallback) {
-            onEndCallback();
-        }
-    };
+function speak(text, onEndCallback) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (ptBrVoices.length > 0) {
+        utterance.voice = ptBrVoices[0];
+    }
+    utterance.lang = 'pt-BR';
+    utterance.onend = () => { if (onEndCallback) onEndCallback(); };
+    window.speechSynthesis.speak(utterance);
 }
 
-/**
- * Envia a pergunta do usuário para o back-end e processa a resposta.
- */
 function getAnswerFromAI(question) {
     status.textContent = "Pensando...";
     fetch('/ask', {
@@ -183,21 +180,13 @@ function getAnswerFromAI(question) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: question, context: currentContext })
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Falha na rede ou erro no servidor');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        const answerText = data.answer;
-        const audioUrl = data.audio_url; // A URL do áudio vinda do nosso backend
+        const answerText = data.answer; // Resposta em TEXTO
         currentContext = data.context;
-
-        addToChatLog('bot', answerText); // Mostra o texto no chat
+        addToChatLog('bot', answerText);
         
-        // Toca o áudio recebido do ElevenLabs
-        speak(audioUrl, () => {
+        speak(answerText, () => { // Usa a função speak do NAVEGADOR
             status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
             if(document.getElementById('questionInput')) {
                 document.getElementById('questionInput').focus();
@@ -208,7 +197,5 @@ function getAnswerFromAI(question) {
         console.error('Erro ao se comunicar com a IA:', error);
         const errorMessage = "Desculpe, estou com problemas de conexão...";
         addToChatLog('bot', errorMessage);
-        // Não tentamos falar o erro se a conexão falhou
-        status.textContent = "Status: Erro de comunicação.";
     });
 }
