@@ -22,7 +22,7 @@
 
         {
             "tag": "vale_transporte_direto",
-            "keywords": ["sobre o vale transporte", "como funciona o vt", "vale transporte"],
+            "keywords": ["sobre o vale transporte", "como funciona o vt", "vale transporte", "vt"],
             "answer": "O Vale Transporte é concedido ao funcionário que utiliza o transporte coletivo para o deslocamento residência-trabalho. O desconto é de 6% sobre o salário do colaborador.",
             "follow_up": "Posso te ajudar com mais alguma coisa?"
         },
@@ -34,7 +34,7 @@
         },
         {
             "tag": "vale_refeicao_direto",
-            "keywords": ["sobre o vale refeição", "quanto é o vr", "ticket alimentação", "desconto do vale refeicao", "vale refeição"],
+            "keywords": ["sobre o vale refeição", "quanto é o vr", "ticket alimentação", "desconto do vale refeicao", "vale refeição", "vr"],
             "answer": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado simbolicamente R$20,00 por mês na sua folha de pagamento.",
             "follow_up": "Posso te ajudar com mais alguma coisa?"
         },
