@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import unicodedata  # <--- Verifique se este import está correto
+import unicodedata
 import json
 
 app = Flask(__name__)
@@ -16,7 +16,6 @@ knowledge_base = load_knowledge_base()
 # --- FUNÇÕES DE PROCESSAMENTO DE TEXTO ---
 def normalize_text(text):
     if not text: return ""
-    # A CORREÇÃO ESTÁ AQUI: 'unicodediata' foi trocado por 'unicodedata'
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn').lower()
 
 def extract_entity(user_question, entity_type):
@@ -96,6 +95,7 @@ def ask_question():
         new_context = None
         follow_up = None
     
+    # Retorna a resposta simples em texto, sem áudio
     return jsonify({"answer": answer_text, "context": new_context, "follow_up": follow_up})
 
 # Removido o if __name__ == '__main__' para ser compatível com o Gunicorn do Render

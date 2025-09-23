@@ -162,14 +162,15 @@ function addToChatLog(sender, message) {
 }
 
 // --- LÓGICA DO ASSISTENTE DE IA (CHAT) ---
-function speak(audioUrl, onEndCallback) {
-    const audio = new Audio(audioUrl);
-    audio.play();
-    audio.onended = () => {
-        if (onEndCallback) {
-            onEndCallback();
-        }
-    };
+function speak(text, onEndCallback) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (ptBrVoices.length > 0) {
+        utterance.voice = ptBrVoices[0];
+    }
+    utterance.lang = 'pt-BR';
+    utterance.onend = () => { if (onEndCallback) onEndCallback(); };
+    window.speechSynthesis.speak(utterance);
 }
 
 function getAnswerFromAI(question) {
@@ -179,33 +180,22 @@ function getAnswerFromAI(question) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: question, context: currentContext })
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Erro no servidor: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        const answerText = data.answer;
-        const audioUrl = data.audio_url;
+        const answerText = data.answer; // Resposta em TEXTO
         currentContext = data.context;
-
         addToChatLog('bot', answerText);
         
-        // Toca o áudio recebido do ElevenLabs
-        if (audioUrl) {
-            speak(audioUrl, () => {
-                status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-                if(document.getElementById('questionInput')) {
-                    document.getElementById('questionInput').focus();
-                }
-            });
-        }
+        speak(answerText, () => { // Usa a função speak do NAVEGADOR
+            status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
+            if(document.getElementById('questionInput')) {
+                document.getElementById('questionInput').focus();
+            }
+        });
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
         const errorMessage = "Desculpe, estou com problemas de conexão...";
         addToChatLog('bot', errorMessage);
-        status.textContent = "Status: Erro de comunicação.";
     });
 }
