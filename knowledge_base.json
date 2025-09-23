@@ -1,7 +1,9 @@
 {
     "entities": {
         "departamento": {
-            "RH": "Joana Silva", "TI": "Marcos Oliveira", "Financeiro": "Beatriz Costa"
+            "RH": "Joana Silva",
+            "TI": "Marcos Oliveira",
+            "Financeiro": "Beatriz Costa"
         }
     },
     "intents": [
@@ -12,44 +14,55 @@
         },
         {
             "tag": "beneficios_geral",
-            "keywords": ["benefícios", "vantagens", "plano de saúde", "convênio"],
-            "answer": "Nossa empresa oferece plano de saúde, vale refeição e auxílio creche. Sobre qual deles você gostaria de saber mais?",
+            "keywords": ["benefícios", "vantagens", "quais os beneficios", "sobre os beneficios"],
+            "answer": "Nossa empresa oferece plano de saúde e odontológico, vale refeição e vale transporte. Sobre qual deles você gostaria de saber mais?",
             "context_set": "aguardando_especificacao_beneficio"
         },
-        {
-            "tag": "vale_refeicao_valor_contexto",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["vale refeição", "vr", "ticket", "valor vale"],
-            "answer": "O valor do vale refeição é R$700,00 mensais.",
-            "follow_up": "Posso detalhar outro benefício para você?"
-        },
-        {
-            "tag": "vale_refeicao_desconto_contexto",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["desconto", "valor do desconto"],
-            "answer": "É descontado o valor referente a R$20,00 (vinte reais) por mês.",
-            "follow_up": "Posso detalhar outro benefício para você?"
-        },
-        {
-            "tag": "vale_refeicao_desconto_direto",
-            "keywords": ["desconto do vale refeicao", "desconto vr", "desconto do vale"],
-            "answer": "É descontado o valor referente a R$20,00 (vinte reais) por mês.",
-            "follow_up": "Posso te ajudar com mais alguma coisa sobre os benefícios?"
-        },
-        {
-            "tag": "plano_de_saude",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto"],
-            "answer": "Contamos com o Plano de Saúde da Hapvida, onde Enfermaria custa R$476,05 e Apartamento no valor de R$550,60. Já nosso Plano Odontológico é o Uniodonto para titulares e dependentes no valor de R$30,92.",
-            "follow_up": "Posso detalhar outro benefício para você?"
-        },
+
+
         {
             "tag": "vale_transporte_direto",
+            "keywords": ["sobre o vale transporte", "como funciona o vt", "vale transporte"],
+            "answer": "O Vale Transporte é concedido ao funcionário que utiliza o transporte coletivo para o deslocamento residência-trabalho. O desconto é de 6% sobre o salário do colaborador.",
+            "follow_up": "Posso te ajudar com mais alguma coisa?"
+        },
+        {
+            "tag": "plano_de_saude_direto",
+            "keywords": ["sobre o plano de saúde", "plano odontológico", "hapvida", "uniodonto", "convenio medico"],
+            "answer": "Contamos com o Plano de Saúde da Hapvida, com opções de Enfermaria (R$476,05) e Apartamento (R$550,60). O Plano Odontológico é o Uniodonto, no valor de R$30,92 para titulares e dependentes.",
+            "follow_up": "Posso te ajudar com mais alguma coisa?"
+        },
+        {
+            "tag": "vale_refeicao_direto",
+            "keywords": ["sobre o vale refeição", "quanto é o vr", "ticket alimentação", "desconto do vale refeicao"],
+            "answer": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado simbolicamente R$20,00 por mês na sua folha de pagamento.",
+            "follow_up": "Posso te ajudar com mais alguma coisa?"
+        },
+
+
+        {
+            "tag": "vale_transporte_contexto",
             "context_filter": "aguardando_especificacao_beneficio",
             "keywords": ["vt", "vale transporte", "transporte"],
-            "answer": "O Vale Transporte é concedido ao funcionário que utiliza o sistema de transporte coletivo para deslocamento da residência ao trabalho e vice versa. Será descontado 6% do salário do colaborador referente ao vale transporte.",
-            "follow_up": "Posso detalhar outro benefício para você?"
+            "answer": "Claro! O Vale Transporte é para quem usa o sistema de transporte coletivo. É descontado 6% do salário do colaborador referente a ele.",
+            "follow_up": "Quer saber sobre outro benefício?"
         },
+        {
+            "tag": "plano_de_saude_contexto",
+            "context_filter": "aguardando_especificacao_beneficio",
+            "keywords": ["plano de saúde", "odontológico", "hapvida"],
+            "answer": "O nosso Plano de Saúde é da Hapvida, com opções de Enfermaria por R$476,05 e Apartamento por R$550,60. Já o odontológico é o Uniodonto, por R$30,92.",
+            "follow_up": "Quer saber sobre outro benefício?"
+        },
+        {
+            "tag": "vale_refeicao_contexto",
+            "context_filter": "aguardando_especificacao_beneficio",
+            "keywords": ["vale refeição", "vr", "ticket", "refeicao"],
+            "answer": "O valor do VR é de R$700,00 mensais, com um desconto de R$20,00 por mês.",
+            "follow_up": "Quer saber sobre outro benefício?"
+        },
+
+
         {
             "tag": "horario",
             "keywords": ["horário", "hora", "expediente", "entrada", "saída"],
@@ -59,7 +72,7 @@
         {
             "tag": "localizacao",
             "keywords": ["onde fica", "localização", "local", "endereço"],
-            "answer": "Nossa Sede é situada no endereço Av. Contorno 2185, Goiânia, GO, 74055-140, e o nosso Hospital fica situado na Av. Atilio Correia Lima 1549, Goiânia, GO, 74425-030.",
+            "answer": "Nossa Sede é situada no endereço Av. Contorno 2185, Goiânia, GO, e o nosso Hospital fica na Av. Atilio Correia Lima 1549, Goiânia, GO.",
             "follow_up": "Precisa de ajuda para chegar lá?"
         },
         {
