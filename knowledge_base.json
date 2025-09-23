@@ -34,7 +34,7 @@
         },
         {
             "tag": "vale_refeicao_direto",
-            "keywords": ["sobre o vale refeição", "quanto é o vr", "ticket alimentação", "desconto do vale refeicao"],
+            "keywords": ["sobre o vale refeição", "quanto é o vr", "ticket alimentação", "desconto do vale refeicao", "vale refeição"],
             "answer": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado simbolicamente R$20,00 por mês na sua folha de pagamento.",
             "follow_up": "Posso te ajudar com mais alguma coisa?"
         },
@@ -66,7 +66,7 @@
         {
             "tag": "horario",
             "keywords": ["horário", "hora", "expediente", "entrada", "saída"],
-            "answer": "O horário de trabalho padrão é das 9h às 18h, com uma hora de almoço.",
+            "answer": "O horário de trabalho padrão é das 8h às 18h, com uma hora de almoço. E as sextas das 8h às 17h.",
             "follow_up": "Isso responde sua pergunta?"
         },
         {
