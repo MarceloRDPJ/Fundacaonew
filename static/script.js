@@ -45,7 +45,7 @@ submitNameBtn.addEventListener('click', () => {
         alert("Por favor, digite seu nome.");
         return;
     }
-    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Estou aqui para te guiar. Quando estiver pronto(a), vamos começar.`;
+    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a CELINE, sua Companheira de Integração. Estou aqui para te guiar. Quando estiver pronto(a), vamos começar.`;
     updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
 });
