@@ -44,7 +44,7 @@
             "follow_up": "Posso detalhar outro benefício para você?"
         },
         {
-            "tag": "vale_transporte",
+            "tag": "vale_transporte_direto",
             "context_filter": "aguardando_especificacao_beneficio",
             "keywords": ["vt", "vale transporte", "transporte"],
             "answer": "O Vale Transporte é concedido ao funcionário que utiliza o sistema de transporte coletivo para deslocamento da residência ao trabalho e vice versa. Será descontado 6% do salário do colaborador referente ao vale transporte.",
