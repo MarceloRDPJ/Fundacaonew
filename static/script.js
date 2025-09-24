@@ -185,11 +185,21 @@ function addBubbleEventListeners(mode) {
 }
 
 function addToChatLog(sender, message) {
-    conversationHistory.push({ role: sender === 'user' ? 'user' : 'model', parts: [{ text: message }] });
+    // CORREÇÃO: Formato do histórico agora corresponde ao esperado pela API do Gemini.
+    // O papel (role) do assistente deve ser 'model'.
+    const role = sender === 'user' ? 'user' : 'model';
+    conversationHistory.push({
+        role: role,
+        parts: [{ text: message }] // O texto agora está dentro de 'parts'
+    });
+
+    // Garante que o histórico não cresça indefinidamente
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
-        conversationHistory.splice(0, 2); // Remove o par mais antigo (pergunta e resposta)
+        // Remove o par mais antigo (pergunta do usuário e resposta do modelo)
+        conversationHistory.splice(0, 2);
     }
 
+    // A parte visual não muda
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
     messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
