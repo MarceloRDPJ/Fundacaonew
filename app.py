@@ -1,63 +1,78 @@
+import os
+import json
+import unicodedata
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import unicodedata
-import json
+import google.generativeai as genai
+from dotenv import load_dotenv
+
+# Carrega as variáveis de ambiente (para desenvolvimento local)
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+# --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+else:
+    print("ERRO: Chave da API do Gemini não encontrada no ambiente.")
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
 def load_knowledge_base():
     with open('knowledge_base.json', 'r', encoding='utf-8') as f:
         return json.load(f)
-
 knowledge_base = load_knowledge_base()
 
-# --- FUNÇÕES DE PROCESSAMENTO DE TEXTO ---
+# --- FUNÇÕES DE PROCESSAMENTO E BUSCA ---
 def normalize_text(text):
     if not text: return ""
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn').lower()
 
-def extract_entity(user_question, entity_type):
+def find_relevant_facts(user_question):
     normalized_question = normalize_text(user_question)
-    possible_values = knowledge_base.get("entities", {}).get(entity_type, {})
+    question_words = set(normalized_question.split())
     
-    for value in possible_values.keys():
-        if normalize_text(value) in normalized_question:
-            return value, possible_values[value]
-    return None, None
+    best_match = {"score": 0, "fact": None}
 
-# --- LÓGICA DE INTELIGÊNCIA APRIMORADA ---
-def find_best_intent(user_question, current_context):
-    normalized_question = normalize_text(user_question)
-    best_match = {"tag": None, "score": 0}
+    for fact in knowledge_base['fatos']:
+        keywords = set(fact.get("palavras_chave_busca", []))
+        # Pontua pela quantidade de palavras-chave correspondentes
+        score = len(question_words.intersection(keywords))
+        
+        if score > best_match["score"]:
+            best_match["score"] = score
+            best_match["fact"] = fact["informacao"]
+    
+    return best_match["fact"] if best_match["score"] > 0 else None
 
-    for intent in knowledge_base['intents']:
-        intent_context = intent.get("context_filter")
-        if intent_context and intent_context != current_context:
-            continue
-        
-        priority = 1.5 if intent_context else 1
-        current_score = 0
-        
-        for keyword in intent.get("keywords", []):
-            normalized_keyword = normalize_text(keyword)
-            if normalized_keyword in normalized_question:
-                score = len(normalized_keyword.split()) ** 2
-                current_score += score
-        
-        final_score = current_score * priority
-        if final_score > best_match['score']:
-            best_match['tag'] = intent['tag']
-            best_match['score'] = final_score
-            
-    return best_match
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
+def generate_gemini_response(user_question, context_fact):
+    if not context_fact:
+        return "Desculpe, não encontrei informações sobre isso. Pode tentar perguntar de outra forma?"
 
-def get_intent_by_tag(tag):
-    for intent in knowledge_base['intents']:
-        if intent['tag'] == tag:
-            return intent
-    return None
+    # O prompt que guia o Gemini
+    prompt = f"""
+    Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
+    Sua tarefa é responder à pergunta do novo funcionário usando APENAS a informação de contexto fornecida.
+    Seja conciso e prestativo.
+
+    --- CONTEXTO ---
+    {context_fact}
+
+    --- PERGUNTA DO FUNCIONÁRIO ---
+    {user_question}
+    """
+    
+    try:
+        model = genai.GenerativeModel('gemini-pro')
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
+        return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
+
 
 # --- ROTAS DA APLICAÇÃO ---
 @app.route('/')
@@ -71,31 +86,12 @@ def ask_question():
         return jsonify({"error": "Requisição inválida."}), 400
 
     user_question = data.get('question')
-    current_context = data.get('context', None)
     
-    best_intent_match = find_best_intent(user_question, current_context)
-
-    if best_intent_match['score'] > 0:
-        intent = get_intent_by_tag(best_intent_match['tag'])
-        answer_text = intent.get('answer')
-        
-        if intent.get("entity"):
-            entity_type = intent.get("entity")
-            entity_name, entity_value = extract_entity(user_question, entity_type)
-            if entity_name:
-                answer_text = answer_text.replace(f"{{{entity_type}}}", entity_name)
-                answer_text = answer_text.replace("{chefe}", entity_value)
-            else:
-                answer_text = f"Não consegui identificar sobre qual {entity_type} você está perguntando. Pode especificar?"
-        
-        new_context = intent.get('context_set', None)
-        follow_up = intent.get('follow_up', None)
-    else:
-        answer_text = "Desculpe, não entendi sua pergunta. Pode tentar reformular?"
-        new_context = None
-        follow_up = None
+    # 1. Busca (Retrieval)
+    relevant_fact = find_relevant_facts(user_question)
     
-    # Retorna a resposta simples em texto, sem áudio
-    return jsonify({"answer": answer_text, "context": new_context, "follow_up": follow_up})
-
-# Removido o if __name__ == '__main__' para ser compatível com o Gunicorn do Render
+    # 2. Geração (Generation)
+    answer_text = generate_gemini_response(user_question, relevant_fact)
+    
+    # O contexto e follow_up agora são gerenciados pelo LLM, então retornamos uma estrutura mais simples
+    return jsonify({"answer": answer_text})

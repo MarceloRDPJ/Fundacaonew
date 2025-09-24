@@ -1,84 +1,34 @@
 {
-    "entities": {
-        "departamento": {
-            "RH": "Joana Silva",
-            "TI": "Marcos Oliveira",
-            "Financeiro": "Beatriz Costa"
-        }
+  "fatos": [
+    {
+      "topico": "beneficios_geral",
+      "informacao": "A empresa oferece plano de saúde e odontológico, vale refeição e vale transporte.",
+      "palavras_chave_busca": ["benefícios", "vantagens", "plano", "convênio"]
     },
-    "intents": [
-        {
-            "tag": "boas_vindas",
-            "keywords": ["oi", "ola", "bom dia", "boa tarde", "boa noite"],
-            "answer": "Olá! Sou o assistente de onboarding. Como posso te ajudar hoje?"
-        },
-        {
-            "tag": "beneficios_geral",
-            "keywords": ["benefícios", "vantagens", "quais os beneficios", "sobre os beneficios"],
-            "answer": "Nossa empresa oferece plano de saúde e odontológico, vale refeição e vale transporte. Sobre qual deles você gostaria de saber mais?",
-            "context_set": "aguardando_especificacao_beneficio"
-        },
-
-
-        {
-            "tag": "vale_transporte_direto",
-            "keywords": ["sobre o vale transporte", "como funciona o vt", "vale transporte", "vt"],
-            "answer": "O Vale Transporte é concedido ao funcionário que utiliza o transporte coletivo para o deslocamento residência-trabalho. O desconto é de 6% sobre o salário do colaborador.",
-            "follow_up": "Posso te ajudar com mais alguma coisa?"
-        },
-        {
-            "tag": "plano_de_saude_direto",
-            "keywords": ["sobre o plano de saúde", "plano odontológico", "hapvida", "uniodonto", "convenio medico", "plano de saúde"],
-            "answer": "Contamos com o Plano de Saúde da Hapvida, com opções de Enfermaria (R$476,05) e Apartamento (R$550,60). O Plano Odontológico é o Uniodonto, no valor de R$30,92 para titulares e dependentes.",
-            "follow_up": "Posso te ajudar com mais alguma coisa?"
-        },
-        {
-            "tag": "vale_refeicao_direto",
-            "keywords": ["sobre o vale refeição", "quanto é o vr", "ticket alimentação", "desconto do vale refeicao", "vale refeição", "vr"],
-            "answer": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado simbolicamente R$20,00 por mês na sua folha de pagamento.",
-            "follow_up": "Posso te ajudar com mais alguma coisa?"
-        },
-
-
-        {
-            "tag": "vale_transporte_contexto",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["vt", "vale transporte", "transporte"],
-            "answer": "Claro! O Vale Transporte é para quem usa o sistema de transporte coletivo. É descontado 6% do salário do colaborador referente a ele.",
-            "follow_up": "Quer saber sobre outro benefício?"
-        },
-        {
-            "tag": "plano_de_saude_contexto",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["plano de saúde", "odontológico", "hapvida"],
-            "answer": "O nosso Plano de Saúde é da Hapvida, com opções de Enfermaria por R$476,05 e Apartamento por R$550,60. Já o odontológico é o Uniodonto, por R$30,92.",
-            "follow_up": "Quer saber sobre outro benefício?"
-        },
-        {
-            "tag": "vale_refeicao_contexto",
-            "context_filter": "aguardando_especificacao_beneficio",
-            "keywords": ["vale refeição", "vr", "ticket", "refeicao"],
-            "answer": "O valor do VR é de R$700,00 mensais, com um desconto de R$20,00 por mês.",
-            "follow_up": "Quer saber sobre outro benefício?"
-        },
-
-
-        {
-            "tag": "horario",
-            "keywords": ["horário", "hora", "expediente", "entrada", "saída"],
-            "answer": "O horário de trabalho padrão é das 8h às 18h, com uma hora de almoço. E as sextas das 8h às 17h.",
-            "follow_up": "Isso responde sua pergunta?"
-        },
-        {
-            "tag": "localizacao",
-            "keywords": ["onde fica", "localização", "local", "endereço"],
-            "answer": "Nossa Sede é situada no endereço Av. Contorno 2185, Goiânia, GO, e o nosso Hospital fica na Av. Atilio Correia Lima 1549, Goiânia, GO.",
-            "follow_up": "Precisa de ajuda para chegar lá?"
-        },
-        {
-            "tag": "agradecimento",
-            "keywords": ["obrigado", "obrigada", "valeu", "ajudou sim"],
-            "answer": "De nada! Se precisar de mais alguma coisa, é só perguntar."
-        }
-    ]
+    {
+      "topico": "vale_transporte",
+      "informacao": "O Vale Transporte é para deslocamento residência-trabalho via transporte coletivo. O desconto é de 6% sobre o salário do colaborador.",
+      "palavras_chave_busca": ["vt", "vale transporte", "onibus", "locomocao", "desconto transporte"]
+    },
+    {
+      "topico": "plano_de_saude",
+      "informacao": "O Plano de Saúde é da Hapvida, com opções de Enfermaria por R$476,05 e Apartamento por R$550,60. O Plano Odontológico é o Uniodonto, por R$30,92 para titulares e dependentes.",
+      "palavras_chave_busca": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto", "convenio medico"]
+    },
+    {
+      "topico": "vale_refeicao",
+      "informacao": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado R$20,00 por mês na folha de pagamento.",
+      "palavras_chave_busca": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação", "desconto vr"]
+    },
+    {
+      "topico": "horario_trabalho",
+      "informacao": "O horário de trabalho padrão é das 9h às 18h, com uma hora de almoço.",
+      "palavras_chave_busca": ["horário", "hora", "expediente", "entrada", "saída", "trabalhar"]
+    },
+    {
+      "topico": "localizacao",
+      "informacao": "A Sede fica na Av. Contorno 2185, Goiânia, GO. O Hospital fica na Av. Atilio Correia Lima 1549, Goiânia, GO.",
+      "palavras_chave_busca": ["onde fica", "localização", "endereço", "sede", "hospital"]
+    }
+  ]
 }

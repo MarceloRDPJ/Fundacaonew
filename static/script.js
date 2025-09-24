@@ -230,40 +230,19 @@ function speak(text, onEndCallback) {
 }
 
 function getAnswerFromAI(question) {
-    // Busca os botões que queremos controlar dentro da seção de Q&A
-    const sendButton = document.getElementById('sendButton');
-    const continueButton = document.getElementById('continueButton');
-
-    // NOVO: Desabilita os botões assim que a pergunta é enviada
-    if (sendButton) sendButton.disabled = true;
-    if (continueButton) continueButton.disabled = true;
     status.textContent = "Pensando...";
-    
     fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question, context: currentContext })
+        body: JSON.stringify({ question: question, context: null }) // Contexto não é mais necessário aqui
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`Erro no servidor: ${response.status}`);
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
         const answerText = data.answer;
-        const audioUrl = data.audio_url; // Para ElevenLabs (se estiver usando)
-        const browserText = data.answer; // Para a voz do navegador (se estiver usando)
-        currentContext = data.context;
-
+        // As chaves 'context' e 'follow_up' não existem mais, a IA gerencia a conversa
         addToChatLog('bot', answerText);
         
-        // A mágica acontece no callback da função 'speak'
-        speak(browserText, () => { // ou speak(audioUrl, ...) se estiver com ElevenLabs
-            // NOVO: Reabilita os botões DEPOIS que a assistente termina de falar
-            if (sendButton) sendButton.disabled = false;
-            if (continueButton) continueButton.disabled = false;
-            
+        speak(answerText, () => {
             status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
             if(document.getElementById('questionInput')) {
                 document.getElementById('questionInput').focus();
@@ -272,12 +251,6 @@ function getAnswerFromAI(question) {
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
-        const errorMessage = "Desculpe, estou com problemas de conexão...";
-        addToChatLog('bot', errorMessage);
-        status.textContent = "Status: Erro de comunicação.";
-
-        // NOVO: Garante que os botões sejam reabilitados mesmo se der erro
-        if (sendButton) sendButton.disabled = false;
-        if (continueButton) continueButton.disabled = false;
+        // ... (seu código de erro)
     });
 }
