@@ -47,12 +47,11 @@ def find_relevant_facts(user_question):
     
     return best_match["fact"] if best_match["score"] > 0 else None
 
-# --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM O NOME DO MODELO CORRIGIDO) ---
 def generate_gemini_response(user_question, context_fact):
     if not context_fact:
-        return "Desculpe, não encontrei informações sobre isso. Pode tentar perguntar de outra forma?"
+        return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
 
-    # O prompt que guia o Gemini
     prompt = f"""
     Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
     Sua tarefa é responder à pergunta do novo funcionário usando APENAS a informação de contexto fornecida.
@@ -66,7 +65,8 @@ def generate_gemini_response(user_question, context_fact):
     """
     
     try:
-        model = genai.GenerativeModel('gemini-pro')
+        # MUDANÇA CRÍTICA AQUI: Usando 'gemini-1.0-pro'
+        model = genai.GenerativeModel('gemini-1.0-pro')
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
@@ -93,5 +93,4 @@ def ask_question():
     # 2. Geração (Generation)
     answer_text = generate_gemini_response(user_question, relevant_fact)
     
-    # O contexto e follow_up agora são gerenciados pelo LLM, então retornamos uma estrutura mais simples
     return jsonify({"answer": answer_text})
