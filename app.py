@@ -30,7 +30,6 @@ def normalize_text(text):
     if not text: return ""
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn').lower()
 
-# --- LÓGICA DE BUSCA CORRIGIDA ---
 def find_relevant_facts(user_question):
     normalized_question = normalize_text(user_question)
     best_match = {"score": 0, "fact": None}
@@ -50,10 +49,8 @@ def find_relevant_facts(user_question):
             best_match["fact"] = fact["informacao"]
             
     return best_match["fact"] if best_match["score"] > 0 else None
-# --- FIM DA CORREÇÃO ---
 
-
-# --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM O NOME DO MODELO CORRIGIDO) ---
 def generate_gemini_response(user_question, context_fact):
     if not context_fact:
         return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
@@ -71,6 +68,7 @@ def generate_gemini_response(user_question, context_fact):
     """
     
     try:
+        # MUDANÇA CRÍTICA AQUI: Usando 'gemini-1.0-pro'
         model = genai.GenerativeModel('gemini-1.0-pro')
         response = model.generate_content(prompt)
         return response.text
