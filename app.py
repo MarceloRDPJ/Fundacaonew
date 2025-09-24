@@ -15,7 +15,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
-    print("ERRO: Chave da API do Gemini não encontrada.")
+    print("ERRO: Chave da API do Gemini não encontrada no ambiente.")
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
 def load_knowledge_base():
@@ -43,43 +43,40 @@ def find_relevant_facts(user_question):
             best_match["fact"] = fact["informacao"]
     return best_match["fact"] if best_match["score"] > 0 else None
 
-# --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM MEMÓRIA) ---
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI (CORRIGIDA) ---
 def generate_gemini_response(user_question, context_fact, history):
-    # Formata o histórico para o prompt, acessando a estrutura correta
-    # Acessa item['parts'][0]['text'] em vez de item['text']
     formatted_history = "\n".join([f"{item['role']}: {item['parts'][0]['text']}" for item in history])
 
     if not context_fact and not history:
-        return "Desculpe, não encontrei informações sobre isso. Pode tentar perguntar de outra forma?"
+        return "Desculpe, não encontrei informações sobre isso na minha base de dados. Pode tentar perguntar de outra forma?"
 
+    # Monta o prompt completo que será enviado
     prompt = f"""
-    Você é a C.I.A., uma assistente de RH amigável da Fundação Tiradentes.
+    Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
     Sua tarefa é responder à pergunta do novo funcionário.
-    Use o histórico da conversa para entender perguntas de acompanhamento e o contexto.
-    Use a informação de "CONTEXTO ADICIONAL" se ela for relevante para a pergunta atual.
+    Use o histórico da conversa para entender perguntas de acompanhamento.
+    Use a informação de "CONTEXTO ADICIONAL" como a fonte principal da verdade para a pergunta atual.
     Seja conciso e prestativo.
 
     --- HISTÓRICO DA CONVERSA ---
     {formatted_history}
 
-    --- CONTEXTO ADICIONAL (use se relevante) ---
-    {context_fact if context_fact else "Nenhum."}
+    --- CONTEXTO ADICIONAL (fonte da verdade) ---
+    {context_fact if context_fact else "Nenhum contexto adicional encontrado para esta pergunta."}
 
     --- PERGUNTA ATUAL DO FUNCIONÁRIO ---
     {user_question}
     """
     
     try:
+        # CORREÇÃO: Usar generate_content com o prompt completo, em vez de start_chat
         model = genai.GenerativeModel('gemini-1.5-pro-latest')
-        
-        # O histórico é passado para a sessão de chat da API
-        chat_session = model.start_chat(history=history)
-        response = chat_session.send_message(user_question)
-        
+        response = model.generate_content(prompt)
         return response.text
     except Exception as e:
         print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
-        return "Desculpe, estou com um problema para me conectar. Tente novamente."
+        return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
+
 # --- ROTAS DA APLICAÇÃO ---
 @app.route('/')
 def index():
@@ -88,16 +85,13 @@ def index():
 @app.route('/ask', methods=['POST'])
 def ask_question():
     data = request.get_json()
-    if not data or 'question' not in data:
-        return jsonify({"error": "Requisição inválida."}), 400
-
     user_question = data.get('question')
     history = data.get('history', [])
     
     # 1. Busca (Retrieval)
     relevant_fact = find_relevant_facts(user_question)
     
-    # 2. Geração (Generation), agora com memória
+    # 2. Geração (Generation)
     answer_text = generate_gemini_response(user_question, relevant_fact, history)
     
     return jsonify({"answer": answer_text})
