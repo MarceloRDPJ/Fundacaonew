@@ -30,24 +30,30 @@ def normalize_text(text):
     if not text: return ""
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn').lower()
 
+# --- LÓGICA DE BUSCA CORRIGIDA ---
 def find_relevant_facts(user_question):
     normalized_question = normalize_text(user_question)
-    question_words = set(normalized_question.split())
-    
     best_match = {"score": 0, "fact": None}
 
     for fact in knowledge_base['fatos']:
-        keywords = set(fact.get("palavras_chave_busca", []))
-        # Pontua pela quantidade de palavras-chave correspondentes
-        score = len(question_words.intersection(keywords))
+        current_score = 0
+        for keyword in fact.get("palavras_chave_busca", []):
+            normalized_keyword = normalize_text(keyword)
+            # Verifica se a palavra-chave (pode ser uma frase) está contida na pergunta
+            if normalized_keyword in normalized_question:
+                # Pontuação é o número de palavras na chave ao quadrado (valoriza frases mais longas)
+                score = len(normalized_keyword.split()) ** 2
+                current_score += score
         
-        if score > best_match["score"]:
-            best_match["score"] = score
+        if current_score > best_match["score"]:
+            best_match["score"] = current_score
             best_match["fact"] = fact["informacao"]
-    
+            
     return best_match["fact"] if best_match["score"] > 0 else None
+# --- FIM DA CORREÇÃO ---
 
-# --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM O NOME DO MODELO CORRIGIDO) ---
+
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
 def generate_gemini_response(user_question, context_fact):
     if not context_fact:
         return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
@@ -65,7 +71,6 @@ def generate_gemini_response(user_question, context_fact):
     """
     
     try:
-        # MUDANÇA CRÍTICA AQUI: Usando 'gemini-1.0-pro'
         model = genai.GenerativeModel('gemini-1.0-pro')
         response = model.generate_content(prompt)
         return response.text
