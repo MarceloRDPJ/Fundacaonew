@@ -4,6 +4,7 @@ const assistantContainer = document.getElementById('assistant-container');
 const assistantBubble = document.getElementById('assistant-bubble');
 const nameInput = document.getElementById('name-input');
 const submitNameBtn = document.getElementById('submit-name-btn');
+
 const videoTitle = document.getElementById('videoTitle');
 const status = document.getElementById('status');
 const chatLogContainer = document.querySelector('.chat-log-container');
@@ -21,24 +22,51 @@ const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=S
 const DEFAULT_PASSWORD = "Tiradentes@10";
 
 
+// Variáveis de estado
 let currentVideoIndex = -1;
 let player;
 let userName = "";
-
-// NOVO: Variável para guardar o histórico da conversa
 let conversationHistory = [];
 const MAX_HISTORY_LENGTH = 6; // Guarda as últimas 6 mensagens (3 turnos)
 
-// --- FUNÇÕES DE LÓGICA E UTILIDADES ---
-// (Funções de controle do fluxo de vídeo e da assistente permanecem as mesmas)
-window.onload = () => { speak("Olá! Para começarmos, qual o seu nome?"); };
+// --- LÓGICA DE VOZ DO NAVEGADOR ---
+let ptBrVoices = [];
+function loadVoices() {
+    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+}
+loadVoices();
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
+function speak(text, onEndCallback) {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    if (ptBrVoices.length > 0) {
+        utterance.voice = ptBrVoices[0];
+    }
+    utterance.lang = 'pt-BR';
+    utterance.onend = () => { if (onEndCallback) onEndCallback(); };
+    window.speechSynthesis.speak(utterance);
+}
+
+// --- FLUXO PRINCIPAL DA APLICAÇÃO ---
+
+window.onload = () => {
+    speak("Olá! Para começarmos, qual o seu nome?");
+};
+
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
-    if (userName === "") { alert("Por favor, digite seu nome."); return; }
+    if (userName === "") {
+        alert("Por favor, digite seu nome.");
+        return;
+    }
+
     const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
     updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
 });
+
 function startJourney() {
     window.speechSynthesis.cancel();
     assistantBubble.classList.add('hidden');
@@ -47,7 +75,10 @@ function startJourney() {
     mainContent.classList.remove('hidden');
     playNextVideo();
 }
-function onYouTubeIframeAPIReady() { /* Inicialização sob demanda */ }
+
+// --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
+function onYouTubeIframeAPIReady() { /* A inicialização acontece sob demanda */ }
+
 function loadVideoByIndex(index) {
     if (index < playlist.length) {
         const videoData = playlist[index];
@@ -64,7 +95,11 @@ function loadVideoByIndex(index) {
         }
     }
 }
-function onPlayerReady(event) { status.textContent = "Status: Reproduzindo vídeo..."; }
+
+function onPlayerReady(event) {
+    status.textContent = "Status: Reproduzindo vídeo...";
+}
+
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
@@ -72,12 +107,15 @@ function onPlayerStateChange(event) {
         assistantBubble.classList.remove('hidden');
     }
 }
+
+// --- FUNÇÕES DE CONTROLE DE FLUXO E UI ---
 function playNextVideo() {
     assistantBubble.classList.add('hidden');
     chatLogContainer.classList.add('hidden');
     chatLog.innerHTML = '';
     conversationHistory = []; // Limpa o histórico para o novo tópico
     currentVideoIndex++;
+
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
@@ -89,25 +127,69 @@ function playNextVideo() {
         finalSection.classList.remove('hidden');
     }
 }
-function updateAssistantBubble(text, mode) { /* ... (sem alterações) ... */ }
-function addBubbleEventListeners(mode) { /* ... (sem alterações) ... */ }
 
-// --- LÓGICA DO CHAT (COM MEMÓRIA) ---
-/**
- * Adiciona uma mensagem ao log de chat na tela E ao histórico de conversa.
- */
+function updateAssistantBubble(text, mode) {
+    let content = `<p>${text}</p>`;
+    if (mode === "start") {
+        content += `<button id="start-journey-btn">Vamos Começar!</button>`;
+    } else if (mode === "prompt") {
+        content += `<div><button id="post-video-yes">Sim</button><button id="post-video-no">Não</button></div>`;
+    } else if (mode === "qa") {
+        content = `
+            <div id="qaSection">
+                <form id="questionForm" class="question-form">
+                    <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
+                    <button type="submit" id="sendButton">Enviar</button>
+                </form>
+                <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
+            </div>`;
+    }
+    assistantBubble.innerHTML = content;
+    addBubbleEventListeners(mode);
+}
+
+function addBubbleEventListeners(mode) {
+    if (mode === "start") {
+        document.getElementById('start-journey-btn').addEventListener('click', startJourney);
+    } else if (mode === "prompt") {
+        const yesBtn = document.getElementById('post-video-yes');
+        const noBtn = document.getElementById('post-video-no');
+        
+        yesBtn.addEventListener('click', () => {
+            updateAssistantBubble("", "qa");
+            chatLogContainer.classList.remove('hidden');
+            document.getElementById('questionInput').focus();
+        });
+        noBtn.addEventListener('click', () => {
+            if (player && typeof player.stopVideo === 'function') player.stopVideo();
+            playNextVideo();
+        });
+    } else if (mode === "qa") {
+        const form = document.getElementById('questionForm');
+        const continueBtn = document.getElementById('continueButton');
+        
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const questionInput = document.getElementById('questionInput');
+            const userQuestion = questionInput.value;
+            if (!userQuestion) return;
+            addToChatLog('user', userQuestion);
+            getAnswerFromAI(userQuestion);
+            questionInput.value = '';
+        });
+        continueBtn.addEventListener('click', () => {
+            if (player && typeof player.stopVideo === 'function') player.stopVideo();
+            playNextVideo();
+        });
+    }
+}
+
 function addToChatLog(sender, message) {
-    // Adiciona ao histórico
-    conversationHistory.push({
-        role: sender, // 'user' ou 'bot'
-        text: message
-    });
-    // Garante que o histórico não cresça indefinidamente
+    conversationHistory.push({ role: sender === 'user' ? 'user' : 'model', parts: [{ text: message }] });
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
-        conversationHistory.shift(); // Remove a mensagem mais antiga
+        conversationHistory.splice(0, 2); // Remove o par mais antigo (pergunta e resposta)
     }
 
-    // Adiciona à tela
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
     messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
@@ -116,33 +198,31 @@ function addToChatLog(sender, message) {
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
 
-function speak(text, onEndCallback) {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'pt-BR';
-    utterance.onend = () => { if (onEndCallback) onEndCallback(); };
-    window.speechSynthesis.speak(utterance);
-}
-
-/**
- * Envia a pergunta E o histórico da conversa para o back-end.
- */
+// --- LÓGICA DA IA (COM MEMÓRIA) ---
 function getAnswerFromAI(question) {
+    const sendButton = document.getElementById('sendButton');
+    const continueButton = document.getElementById('continueButton');
+
+    if (sendButton) sendButton.disabled = true;
+    if (continueButton) continueButton.disabled = true;
     status.textContent = "Pensando...";
+
     fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             question: question,
-            history: conversationHistory // NOVO: Enviando o histórico
+            history: conversationHistory.slice(0, -1) // Envia o histórico SEM a pergunta atual
         })
     })
     .then(response => response.json())
     .then(data => {
         const answerText = data.answer;
-        addToChatLog('bot', answerText); // A resposta também é adicionada ao histórico
+        addToChatLog('bot', answerText);
         
         speak(answerText, () => {
+            if (sendButton) sendButton.disabled = false;
+            if (continueButton) continueButton.disabled = false;
             status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
             if(document.getElementById('questionInput')) {
                 document.getElementById('questionInput').focus();
@@ -151,6 +231,10 @@ function getAnswerFromAI(question) {
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
-        // ... (código de erro)
+        const errorMessage = "Desculpe, estou com problemas de conexão...";
+        addToChatLog('bot', errorMessage);
+        if (sendButton) sendButton.disabled = false;
+        if (continueButton) continueButton.disabled = false;
+        status.textContent = "Status: Erro de comunicação.";
     });
 }
