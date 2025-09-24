@@ -185,12 +185,13 @@ function addBubbleEventListeners(mode) {
 }
 
 function addToChatLog(sender, message) {
-    // CORREÇÃO: Formato do histórico agora corresponde ao esperado pela API do Gemini.
     // O papel (role) do assistente deve ser 'model'.
     const role = sender === 'user' ? 'user' : 'model';
+    
+    // Adiciona ao histórico no formato { role: '...', parts: [{ text: '...' }] }
     conversationHistory.push({
         role: role,
-        parts: [{ text: message }] // O texto agora está dentro de 'parts'
+        parts: [{ text: message }]
     });
 
     // Garante que o histórico não cresça indefinidamente

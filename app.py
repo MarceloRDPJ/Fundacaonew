@@ -45,10 +45,10 @@ def find_relevant_facts(user_question):
 
 # --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM MEMÓRIA) ---
 def generate_gemini_response(user_question, context_fact, history):
-    # Formata o histórico para o prompt
-    formatted_history = "\n".join([f"{item['role']}: {item['text']}" for item in history])
+    # Formata o histórico para o prompt, acessando a estrutura correta
+    # Acessa item['parts'][0]['text'] em vez de item['text']
+    formatted_history = "\n".join([f"{item['role']}: {item['parts'][0]['text']}" for item in history])
 
-    # Se não encontrar um fato novo, mas houver histórico, a IA pode usar o contexto da conversa
     if not context_fact and not history:
         return "Desculpe, não encontrei informações sobre isso. Pode tentar perguntar de outra forma?"
 
@@ -71,12 +71,15 @@ def generate_gemini_response(user_question, context_fact, history):
     
     try:
         model = genai.GenerativeModel('gemini-1.5-pro-latest')
-        response = model.generate_content(prompt)
+        
+        # O histórico é passado para a sessão de chat da API
+        chat_session = model.start_chat(history=history)
+        response = chat_session.send_message(user_question)
+        
         return response.text
     except Exception as e:
         print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
         return "Desculpe, estou com um problema para me conectar. Tente novamente."
-
 # --- ROTAS DA APLICAÇÃO ---
 @app.route('/')
 def index():
