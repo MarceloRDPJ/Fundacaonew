@@ -6,9 +6,7 @@ from flask_cors import CORS
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Carrega as variáveis de ambiente (para desenvolvimento local)
 load_dotenv()
-
 app = Flask(__name__)
 CORS(app)
 
@@ -17,7 +15,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
-    print("ERRO: Chave da API do Gemini não encontrada no ambiente.")
+    print("ERRO: Chave da API do Gemini não encontrada.")
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
 def load_knowledge_base():
@@ -33,7 +31,6 @@ def normalize_text(text):
 def find_relevant_facts(user_question):
     normalized_question = normalize_text(user_question)
     best_match = {"score": 0, "fact": None}
-
     for fact in knowledge_base['fatos']:
         current_score = 0
         for keyword in fact.get("palavras_chave_busca", []):
@@ -41,27 +38,34 @@ def find_relevant_facts(user_question):
             if normalized_keyword in normalized_question:
                 score = len(normalized_keyword.split()) ** 2
                 current_score += score
-        
         if current_score > best_match["score"]:
             best_match["score"] = current_score
             best_match["fact"] = fact["informacao"]
-            
     return best_match["fact"] if best_match["score"] > 0 else None
 
-# --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
-def generate_gemini_response(user_question, context_fact):
-    if not context_fact:
-        return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM MEMÓRIA) ---
+def generate_gemini_response(user_question, context_fact, history):
+    # Formata o histórico para o prompt
+    formatted_history = "\n".join([f"{item['role']}: {item['text']}" for item in history])
+
+    # Se não encontrar um fato novo, mas houver histórico, a IA pode usar o contexto da conversa
+    if not context_fact and not history:
+        return "Desculpe, não encontrei informações sobre isso. Pode tentar perguntar de outra forma?"
 
     prompt = f"""
-    Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
-    Sua tarefa é responder à pergunta do novo funcionário usando APENAS a informação de contexto fornecida.
+    Você é a C.I.A., uma assistente de RH amigável da Fundação Tiradentes.
+    Sua tarefa é responder à pergunta do novo funcionário.
+    Use o histórico da conversa para entender perguntas de acompanhamento e o contexto.
+    Use a informação de "CONTEXTO ADICIONAL" se ela for relevante para a pergunta atual.
     Seja conciso e prestativo.
 
-    --- CONTEXTO ---
-    {context_fact}
+    --- HISTÓRICO DA CONVERSA ---
+    {formatted_history}
 
-    --- PERGUNTA DO FUNCIONÁRIO ---
+    --- CONTEXTO ADICIONAL (use se relevante) ---
+    {context_fact if context_fact else "Nenhum."}
+
+    --- PERGUNTA ATUAL DO FUNCIONÁRIO ---
     {user_question}
     """
     
@@ -71,7 +75,7 @@ def generate_gemini_response(user_question, context_fact):
         return response.text
     except Exception as e:
         print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
-        return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
+        return "Desculpe, estou com um problema para me conectar. Tente novamente."
 
 # --- ROTAS DA APLICAÇÃO ---
 @app.route('/')
@@ -85,11 +89,12 @@ def ask_question():
         return jsonify({"error": "Requisição inválida."}), 400
 
     user_question = data.get('question')
+    history = data.get('history', [])
     
     # 1. Busca (Retrieval)
     relevant_fact = find_relevant_facts(user_question)
     
-    # 2. Geração (Generation)
-    answer_text = generate_gemini_response(user_question, relevant_fact)
+    # 2. Geração (Generation), agora com memória
+    answer_text = generate_gemini_response(user_question, relevant_fact, history)
     
     return jsonify({"answer": answer_text})
