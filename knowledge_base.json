@@ -3,27 +3,27 @@
     {
       "topico": "beneficios_geral",
       "informacao": "A empresa oferece plano de saúde e odontológico, vale refeição e vale transporte.",
-      "palavras_chave_busca": ["benefícios", "vantagens", "plano", "convênio"]
+      "palavras_chave_busca": ["benefícios", "vantagens", "plano", "convênio", "quais os beneficios"]
     },
     {
       "topico": "vale_transporte",
-      "informacao": "O Vale Transporte é para deslocamento residência-trabalho via transporte coletivo. O desconto é de 6% sobre o salário do colaborador.",
-      "palavras_chave_busca": ["vt", "vale transporte", "onibus", "locomocao", "desconto transporte"]
+      "informacao": "O Vale Transporte é um benefício para custear o deslocamento entre residência e trabalho via transporte coletivo. O desconto para o colaborador é de 6% sobre o salário.",
+      "palavras_chave_busca": ["vt", "vale transporte", "onibus", "busão", "locomocao", "desconto transporte", "passagem", "ajuda de custo para transporte"]
     },
     {
       "topico": "plano_de_saude",
-      "informacao": "O Plano de Saúde é da Hapvida, com opções de Enfermaria por R$476,05 e Apartamento por R$550,60. O Plano Odontológico é o Uniodonto, por R$30,92 para titulares e dependentes.",
-      "palavras_chave_busca": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto", "convenio medico"]
+      "informacao": "O Plano de Saúde é da Hapvida, com opções de Enfermaria (R$476,05) e Apartamento (R$550,60). O Plano Odontológico é o Uniodonto, por R$30,92 para titulares e dependentes.",
+      "palavras_chave_busca": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto", "convenio medico", "assistencia medica"]
     },
     {
       "topico": "vale_refeicao",
       "informacao": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado R$20,00 por mês na folha de pagamento.",
-      "palavras_chave_busca": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação", "desconto vr"]
+      "palavras_chave_busca": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação", "desconto vr", "ajuda de custo para alimentação"]
     },
     {
       "topico": "horario_trabalho",
       "informacao": "O horário de trabalho padrão é das 9h às 18h, com uma hora de almoço.",
-      "palavras_chave_busca": ["horário", "hora", "expediente", "entrada", "saída", "trabalhar"]
+      "palavras_chave_busca": ["horário", "hora", "expediente", "entrada", "saída", "trabalhar", "jornada"]
     },
     {
       "topico": "localizacao",
