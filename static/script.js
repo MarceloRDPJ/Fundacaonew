@@ -13,11 +13,13 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
+    { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
+    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
 ];
-const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI"; // Substitua pelo seu link
+const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
+
 const DEFAULT_PASSWORD = "Tiradentes@10";
+
 
 let currentVideoIndex = -1;
 let player;
