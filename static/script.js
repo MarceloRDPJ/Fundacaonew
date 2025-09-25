@@ -184,10 +184,29 @@ function addBubbleEventListeners(mode) {
     }
 }
 
+function startTypingAnimation(botMessageElement, onFinished) {
+    // Limpa qualquer animação anterior que possa estar rodando
+    if (typingInterval) clearInterval(typingInterval);
+
+    typingInterval = setInterval(() => {
+        // Se há caracteres na fila, digita o próximo
+        if (characterQueue.length > 0) {
+            const char = characterQueue.shift(); // Pega o primeiro caractere da fila
+            botMessageElement.innerHTML += char;
+            chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+        } else {
+            // Se a fila está vazia, para o loop e chama a função de finalização
+            clearInterval(typingInterval);
+            if (onFinished) {
+                onFinished();
+            }
+        }
+    }, TYPING_SPEED);
+}
+
 function addToChatLog(sender, message, isFinalizing = false) {
     const role = sender === 'user' ? 'user' : 'model';
     
-    // Adiciona ao histórico lógico apenas se for a pergunta do usuário ou a finalização da resposta do bot
     if(sender === 'user' || isFinalizing) {
         conversationHistory.push({ role: role, parts: [{ text: message }] });
         if (conversationHistory.length > MAX_HISTORY_LENGTH) {
@@ -195,7 +214,6 @@ function addToChatLog(sender, message, isFinalizing = false) {
         }
     }
 
-    // A parte visual é tratada pela getAnswerFromAI para o bot, e aqui para o usuário
     if (sender === 'user') {
         const messageElement = document.createElement('p');
         messageElement.className = 'user-message';
@@ -204,6 +222,7 @@ function addToChatLog(sender, message, isFinalizing = false) {
         chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
     }
 }
+
 
 // --- LÓGICA DA IA (COM MEMÓRIA) ---
 async function getAnswerFromAI(question) {
@@ -214,17 +233,35 @@ async function getAnswerFromAI(question) {
     if (continueButton) continueButton.disabled = true;
     status.textContent = "Pensando...";
 
-    // Adiciona a pergunta do usuário ao histórico ANTES de enviar
     addToChatLog('user', question);
 
-    // Cria um parágrafo vazio para a resposta do bot, que será preenchido aos poucos
     const botMessageElement = document.createElement('p');
     botMessageElement.className = 'bot-message';
     botMessageElement.innerHTML = `<strong>Assistente:</strong> `;
     chatLog.appendChild(botMessageElement);
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 
-    let fullResponse = ""; // Variável para acumular a resposta completa para a voz
+    let fullResponse = "";
+    let streamFinished = false;
+
+    // A função que será chamada quando a digitação terminar
+    const onTypingFinished = () => {
+        // Só executa se a conexão já tiver terminado
+        if (!streamFinished) return;
+        
+        addToChatLog('bot', fullResponse, true); // Adiciona a resposta completa ao histórico lógico
+        speak(fullResponse); // Toca a voz com a resposta completa
+
+        if (sendButton) sendButton.disabled = false;
+        if (continueButton) continueButton.disabled = false;
+        status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
+        if(document.getElementById('questionInput')) {
+            document.getElementById('questionInput').focus();
+        }
+    };
+
+    // Inicia a animação de digitação, que ficará esperando por caracteres na fila
+    startTypingAnimation(botMessageElement, onTypingFinished);
 
     try {
         const response = await fetch('/ask', {
@@ -236,38 +273,29 @@ async function getAnswerFromAI(question) {
             })
         });
 
-        if (!response.ok) {
-            throw new Error(`Erro no servidor: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`Erro no servidor: ${response.status}`);
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
 
-        // Loop para ler os pedaços da resposta
         while (true) {
             const { value, done } = await reader.read();
-            if (done) break; // Sai do loop quando a transmissão termina
-
+            if (done) {
+                streamFinished = true; // Sinaliza que a conexão terminou
+                // Se a fila de caracteres já esvaziou, chama a finalização
+                if(characterQueue.length === 0) onTypingFinished();
+                break;
+            }
             const chunk = decoder.decode(value);
-            fullResponse += chunk; // Acumula o texto para a síntese de voz
-            botMessageElement.innerHTML += chunk; // Adiciona o pedaço na tela (efeito máquina de escrever)
-            chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+            fullResponse += chunk;
+            characterQueue.push(...chunk.split('')); // Adiciona os caracteres na fila
         }
 
     } catch (error) {
         console.error('Erro ao se comunicar com a IA:', error);
         fullResponse = "Desculpe, estou com problemas de conexão...";
-        botMessageElement.innerHTML = `<strong>Assistente:</strong> ${fullResponse}`;
-    } finally {
-        // Quando tudo termina (com sucesso ou erro)
-        addToChatLog('bot', fullResponse, true); // Adiciona a resposta completa ao histórico lógico
-        speak(fullResponse); // Toca a voz com a resposta completa
-
-        if (sendButton) sendButton.disabled = false;
-        if (continueButton) continueButton.disabled = false;
-        status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-        if(document.getElementById('questionInput')) {
-            document.getElementById('questionInput').focus();
-        }
+        characterQueue.push(...fullResponse.split('')); // Adiciona a mensagem de erro na fila
+        streamFinished = true;
+        if(characterQueue.length === 0) onTypingFinished();
     }
 }
