@@ -3,22 +3,22 @@
     {
       "topico": "beneficios_geral",
       "informacao": "A empresa oferece plano de saúde e odontológico, vale refeição e vale transporte.",
-      "palavras_chave_busca": ["benefícios", "vantagens", "plano", "convênio", "quais os beneficios"]
+      "palavras_chave_busca": ["benefícios", "vantagens", "plano", "convênio", "quais os beneficios", "sobre os beneficios"]
     },
     {
       "topico": "vale_transporte",
       "informacao": "O Vale Transporte é um benefício para custear o deslocamento entre residência e trabalho via transporte coletivo. O desconto para o colaborador é de 6% sobre o salário.",
-      "palavras_chave_busca": ["vt", "vale transporte", "onibus", "busão", "locomocao", "desconto transporte", "passagem", "ajuda de custo para transporte"]
+      "palavras_chave_busca": ["vt", "vale transporte", "onibus", "busão", "locomocao", "desconto transporte", "passagem", "ajuda de custo para transporte", "valor do vt", "valor vale transporte"]
     },
     {
       "topico": "plano_de_saude",
-      "informacao": "O Plano de Saúde é da Hapvida, com opções de Enfermaria (R$476,05) e Apartamento (R$550,60). O Plano Odontológico é o Uniodonto, por R$30,92 para titulares e dependentes.",
-      "palavras_chave_busca": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto", "convenio medico", "assistencia medica"]
+      "informacao": "O Plano de Saúde é da Hapvida, com opções de Enfermaria por R$476,05 e Apartamento por R$550,60. O Plano Odontológico é o Uniodonto, por R$30,92 para titulares e dependentes.",
+      "palavras_chave_busca": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto", "convenio medico", "assistencia medica", "valor do plano de saude"]
     },
     {
       "topico": "vale_refeicao",
       "informacao": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado R$20,00 por mês na folha de pagamento.",
-      "palavras_chave_busca": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação", "desconto vr", "ajuda de custo para alimentação"]
+      "palavras_chave_busca": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação", "desconto vr", "ajuda de custo para alimentação", "valor do vr"]
     },
     {
       "topico": "horario_trabalho",
@@ -28,7 +28,7 @@
     {
       "topico": "localizacao",
       "informacao": "A Sede fica na Av. Contorno 2185, Goiânia, GO. O Hospital fica na Av. Atilio Correia Lima 1549, Goiânia, GO.",
-      "palavras_chave_busca": ["onde fica", "localização", "endereço", "sede", "hospital"]
+      "palavras_chave_busca": ["onde fica", "localização", "endereço", "sede", "hospital", "localizacao da fundacao"]
     }
   ]
 }
