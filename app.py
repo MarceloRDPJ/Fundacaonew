@@ -1,7 +1,7 @@
 import os
 import json
 import unicodedata
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Response, stream_with_context
 from flask_cors import CORS
 import google.generativeai as genai
 import numpy as np
@@ -20,75 +20,50 @@ else:
 
 EMBEDDING_MODEL = "models/text-embedding-004"
 
-# --- CARREGANDO A BASE DE CONHECIMENTO COM EMBEDDINGS ---
+# --- CARREGANDO A BASE DE CONHECIMENTO ---
 def load_knowledge_base():
     with open('knowledge_base_com_embeddings.json', 'r', encoding='utf-8') as f:
         return json.load(f)
 knowledge_base = load_knowledge_base()
 facts_with_embeddings = [fact for fact in knowledge_base['fatos'] if 'embedding' in fact and fact['embedding']]
 
-# --- FUNÇÕES DE PROCESSAMENTO E BUSCA SEMÂNTICA ---
-def find_relevant_facts_semantica(user_question):
-    try:
-        question_embedding = genai.embed_content(
-            model=EMBEDDING_MODEL,
-            content=user_question
-        )['embedding']
-    except Exception as e:
-        print(f"ERRO ao gerar embedding para a pergunta: {e}")
-        return None
+# --- FUNÇÕES DE PROCESSAMENTO E BUSCA (sem alterações) ---
+def normalize_text(text): # ... (código existente)
+def find_relevant_facts_semantica(user_question): # ... (código existente)
 
-    best_score = -1
-    best_fact_object = None # MUDANÇA: Agora vamos guardar o objeto 'fato' inteiro
-    
-    for fact in facts_with_embeddings:
-        score = np.dot(question_embedding, fact['embedding'])
-        if score > best_score:
-            best_score = score
-            best_fact_object = fact # Guarda o fato inteiro (tópico + informação)
-            
-    CONFIDENCE_THRESHOLD = 0.65
-    
-    if best_score > CONFIDENCE_THRESHOLD:
-        return best_fact_object # Retorna o objeto completo
-    else:
-        return None
-
-# --- FUNÇÃO DE GERAÇÃO COM GEMINI (COM PROMPT APRIMORADO) ---
-def generate_gemini_response(user_question, context_fact_object, history):
-    if not context_fact_object:
-        return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
-
-    # MUDANÇA CRÍTICA: Extraímos o tópico e a informação do objeto
-    context_topic = context_fact_object.get('topico', 'Geral')
-    context_info = context_fact_object.get('informacao', '')
+# --- FUNÇÃO DE GERAÇÃO COM GEMINI (MODIFICADA PARA STREAMING) ---
+def generate_gemini_response_stream(user_question, context_fact, history):
+    # Esta função agora é um GERADOR, usando 'yield'
+    if not context_fact and not history:
+        yield "Desculpe, não encontrei informações sobre isso. Pode tentar de outra forma?"
+        return # Termina a execução da função
 
     formatted_history = "\n".join([f"{item['role']}: {item['parts'][0]['text']}" for item in history])
-
     prompt = f"""
-    Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
-    Sua tarefa é responder à pergunta do novo funcionário.
-    A pergunta parece ser sobre o tópico "{context_topic}".
-    Use APENAS a informação de "CONTEXTO" abaixo para formular sua resposta.
+    Você é a C.I.A., uma assistente de RH amigável e profissional.
+    Sua tarefa é responder à pergunta do funcionário usando o CONTEXTO fornecido e o HISTÓRICO da conversa.
     Seja conciso e prestativo.
 
     --- CONTEXTO ---
-    {context_info}
-
+    {context_fact if context_fact else "Nenhum."}
     --- HISTÓRICO DA CONVERSA ---
     {formatted_history}
-
     --- PERGUNTA ATUAL DO FUNCIONÁRIO ---
     {user_question}
     """
     
     try:
         model = genai.GenerativeModel('gemini-1.5-pro-latest')
-        response = model.generate_content(prompt)
-        return response.text
+        # MUDANÇA CRÍTICA: Adicionamos stream=True
+        responses = model.generate_content(prompt, stream=True)
+        
+        # Itera sobre cada pedaço da resposta que a API envia
+        for chunk in responses:
+            yield chunk.text
+            
     except Exception as e:
         print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
-        return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
+        yield "Desculpe, estou com um problema de conexão no momento."
 
 # --- ROTAS DA APLICAÇÃO ---
 @app.route('/')
@@ -101,7 +76,7 @@ def ask_question():
     user_question = data.get('question')
     history = data.get('history', [])
     
-    relevant_fact_object = find_relevant_facts_semantica(user_question)
-    answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
+    relevant_fact = find_relevant_facts_semantica(user_question)
     
-    return jsonify({"answer": answer_text})
+    # MUDANÇA CRÍTICA: A rota agora retorna um objeto Response com o gerador
+    return Response(stream_with_context(generate_gemini_response_stream(user_question, relevant_fact, history)), mimetype='text/plain')

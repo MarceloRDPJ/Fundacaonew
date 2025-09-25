@@ -184,33 +184,29 @@ function addBubbleEventListeners(mode) {
     }
 }
 
-function addToChatLog(sender, message) {
-    // O papel (role) do assistente deve ser 'model'.
+function addToChatLog(sender, message, isFinalizing = false) {
     const role = sender === 'user' ? 'user' : 'model';
     
-    // Adiciona ao histórico no formato { role: '...', parts: [{ text: '...' }] }
-    conversationHistory.push({
-        role: role,
-        parts: [{ text: message }]
-    });
-
-    // Garante que o histórico não cresça indefinidamente
-    if (conversationHistory.length > MAX_HISTORY_LENGTH) {
-        // Remove o par mais antigo (pergunta do usuário e resposta do modelo)
-        conversationHistory.splice(0, 2);
+    // Adiciona ao histórico lógico apenas se for a pergunta do usuário ou a finalização da resposta do bot
+    if(sender === 'user' || isFinalizing) {
+        conversationHistory.push({ role: role, parts: [{ text: message }] });
+        if (conversationHistory.length > MAX_HISTORY_LENGTH) {
+            conversationHistory.splice(0, 2);
+        }
     }
 
-    // A parte visual não muda
-    const messageElement = document.createElement('p');
-    const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
-    messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
-    messageElement.innerHTML = `<strong>${senderPrefix}:</strong> ${message}`;
-    chatLog.appendChild(messageElement);
-    chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+    // A parte visual é tratada pela getAnswerFromAI para o bot, e aqui para o usuário
+    if (sender === 'user') {
+        const messageElement = document.createElement('p');
+        messageElement.className = 'user-message';
+        messageElement.innerHTML = `<strong>Você:</strong> ${message}`;
+        chatLog.appendChild(messageElement);
+        chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+    }
 }
 
 // --- LÓGICA DA IA (COM MEMÓRIA) ---
-function getAnswerFromAI(question) {
+async function getAnswerFromAI(question) {
     const sendButton = document.getElementById('sendButton');
     const continueButton = document.getElementById('continueButton');
 
@@ -218,34 +214,60 @@ function getAnswerFromAI(question) {
     if (continueButton) continueButton.disabled = true;
     status.textContent = "Pensando...";
 
-    fetch('/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            question: question,
-            history: conversationHistory.slice(0, -1) // Envia o histórico SEM a pergunta atual
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        const answerText = data.answer;
-        addToChatLog('bot', answerText);
-        
-        speak(answerText, () => {
-            if (sendButton) sendButton.disabled = false;
-            if (continueButton) continueButton.disabled = false;
-            status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-            if(document.getElementById('questionInput')) {
-                document.getElementById('questionInput').focus();
-            }
+    // Adiciona a pergunta do usuário ao histórico ANTES de enviar
+    addToChatLog('user', question);
+
+    // Cria um parágrafo vazio para a resposta do bot, que será preenchido aos poucos
+    const botMessageElement = document.createElement('p');
+    botMessageElement.className = 'bot-message';
+    botMessageElement.innerHTML = `<strong>Assistente:</strong> `;
+    chatLog.appendChild(botMessageElement);
+    chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+
+    let fullResponse = ""; // Variável para acumular a resposta completa para a voz
+
+    try {
+        const response = await fetch('/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: question,
+                history: conversationHistory.slice(0, -1)
+            })
         });
-    })
-    .catch(error => {
+
+        if (!response.ok) {
+            throw new Error(`Erro no servidor: ${response.status}`);
+        }
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        // Loop para ler os pedaços da resposta
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break; // Sai do loop quando a transmissão termina
+
+            const chunk = decoder.decode(value);
+            fullResponse += chunk; // Acumula o texto para a síntese de voz
+            botMessageElement.innerHTML += chunk; // Adiciona o pedaço na tela (efeito máquina de escrever)
+            chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+        }
+
+    } catch (error) {
         console.error('Erro ao se comunicar com a IA:', error);
-        const errorMessage = "Desculpe, estou com problemas de conexão...";
-        addToChatLog('bot', errorMessage);
+        fullResponse = "Desculpe, estou com problemas de conexão...";
+        botMessageElement.innerHTML = `<strong>Assistente:</strong> ${fullResponse}`;
+    } finally {
+        // Quando tudo termina (com sucesso ou erro)
+        addToChatLog('bot', fullResponse, true); // Adiciona a resposta completa ao histórico lógico
+        speak(fullResponse); // Toca a voz com a resposta completa
+
         if (sendButton) sendButton.disabled = false;
         if (continueButton) continueButton.disabled = false;
-        status.textContent = "Status: Erro de comunicação.";
-    });
+        status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
+        if(document.getElementById('questionInput')) {
+            document.getElementById('questionInput').focus();
+        }
+    }
 }
