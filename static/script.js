@@ -83,7 +83,13 @@ function loadVideoByIndex(index) {
         if (!player) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
-                playerVars: { 'autoplay': 1, 'controls': 1, 'modestbranding': 1 },
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 1,
+                    'modestbranding': 1,
+                    // CORREÇÃO: Informa ao YouTube qual site está incorporando o vídeo
+                    'origin': window.location.origin
+                },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
         } else {
