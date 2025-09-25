@@ -1,4 +1,4 @@
-// --- CONFIGURAÇÃO INICIAL E DADOS ---
+// --- CONFIGURAÇÃO INICIAL ---
 const mainContent = document.getElementById('main-content');
 const assistantContainer = document.getElementById('assistant-container');
 const assistantBubble = document.getElementById('assistant-bubble');
@@ -13,13 +13,11 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
+    { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
+    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
 ];
-const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
-
+const GOOGLE_DRIVE_LINK = "COLOQUE_SEU_LINK_DA_PROVA_AQUI"; // Substitua pelo seu link
 const DEFAULT_PASSWORD = "Tiradentes@10";
-
 
 let currentVideoIndex = -1;
 let player;
@@ -29,25 +27,35 @@ const MAX_HISTORY_LENGTH = 6;
 let ptBrVoices = [];
 
 // --- LÓGICA DE VOZ DO NAVEGADOR ---
-function loadVoices() { ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR'); }
+function loadVoices() {
+    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+}
 loadVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = loadVoices; }
-
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    if (ptBrVoices.length > 0) { utterance.voice = ptBrVoices[0]; }
+    if (ptBrVoices.length > 0) {
+        utterance.voice = ptBrVoices[0];
+    }
     utterance.lang = 'pt-BR';
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
 }
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
-window.onload = () => { speak("Olá! Para começarmos, qual o seu nome?"); };
+window.onload = () => {
+    speak("Olá! Para começarmos, qual o seu nome completo?");
+};
 
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
-    if (userName === "") { alert("Por favor, digite seu nome."); return; }
+    if (userName === "") {
+        alert("Por favor, digite seu nome.");
+        return;
+    }
     const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
     updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
@@ -56,6 +64,8 @@ submitNameBtn.addEventListener('click', () => {
 function startJourney() {
     window.speechSynthesis.cancel();
     assistantBubble.classList.add('hidden');
+    const assistantLogo = assistantContainer.querySelector('img');
+    if (assistantLogo) assistantLogo.style.display = 'none';
     assistantContainer.classList.remove('assistant-centered');
     assistantContainer.classList.add('assistant-corner');
     mainContent.classList.remove('hidden');
@@ -72,8 +82,11 @@ function loadVideoByIndex(index) {
         if (!player) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
-                playerVars: {
-                    'autoplay': 1, 'controls': 1, 'modestbranding': 1,
+                playerVars: { 
+                    'autoplay': 1, 
+                    'controls': 1, 
+                    'modestbranding': 1,
+                    // CORREÇÃO CRÍTICA: Adicionado para evitar erros de permissão no Render
                     'origin': window.location.origin
                 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
@@ -85,11 +98,15 @@ function loadVideoByIndex(index) {
     }
 }
 
-function onPlayerReady(event) { status.textContent = "Status: Reproduzindo vídeo..."; }
+function onPlayerReady(event) {
+    status.textContent = "Status: Reproduzindo vídeo...";
+    status.style.color = "#eaf0ff"; // Cor do texto clara para o fundo escuro
+}
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
+        status.style.color = "#eaf0ff";
         updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
         assistantBubble.classList.remove('hidden');
     }
@@ -102,6 +119,7 @@ function playNextVideo() {
     chatLog.innerHTML = '';
     conversationHistory = [];
     currentVideoIndex++;
+
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
@@ -109,8 +127,13 @@ function playNextVideo() {
         videoTitle.classList.add('hidden');
         document.getElementById('video-player-container').classList.add('hidden');
         status.textContent = "Status: Finalizado.";
+        status.classList.add("finalizado"); // Adiciona classe para cor escura
         proofLink.href = GOOGLE_DRIVE_LINK;
         finalSection.classList.remove('hidden');
+    }
+    const assistantLogo = assistantContainer.querySelector('img');
+    if (assistantLogo && assistantContainer.classList.contains('assistant-corner')) {
+        assistantLogo.style.display = '';
     }
 }
 
@@ -121,13 +144,14 @@ function updateAssistantBubble(text, mode) {
     } else if (mode === "prompt") {
         content += `<div><button id="post-video-yes">Sim</button><button id="post-video-no">Não</button></div>`;
     } else if (mode === "qa") {
-        content = `<div id="qaSection">
-                    <form id="questionForm" class="question-form">
-                        <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
-                        <button type="submit" id="sendButton">Enviar</button>
-                    </form>
-                    <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
-                </div>`;
+        content = `
+            <div id="qaSection">
+                <form id="questionForm" class="question-form">
+                    <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
+                    <button type="submit" id="sendButton">Enviar</button>
+                </form>
+                <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
+            </div>`;
     }
     assistantBubble.innerHTML = content;
     addBubbleEventListeners(mode);
@@ -137,17 +161,23 @@ function addBubbleEventListeners(mode) {
     if (mode === "start") {
         document.getElementById('start-journey-btn').addEventListener('click', startJourney);
     } else if (mode === "prompt") {
-        document.getElementById('post-video-yes').addEventListener('click', () => {
+        const yesBtn = document.getElementById('post-video-yes');
+        const noBtn = document.getElementById('post-video-no');
+        
+        yesBtn.addEventListener('click', () => {
             updateAssistantBubble("", "qa");
             chatLogContainer.classList.remove('hidden');
             document.getElementById('questionInput').focus();
         });
-        document.getElementById('post-video-no').addEventListener('click', () => {
+        noBtn.addEventListener('click', () => {
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             playNextVideo();
         });
     } else if (mode === "qa") {
-        document.getElementById('questionForm').addEventListener('submit', (event) => {
+        const form = document.getElementById('questionForm');
+        const continueBtn = document.getElementById('continueButton');
+        
+        form.addEventListener('submit', (event) => {
             event.preventDefault();
             const questionInput = document.getElementById('questionInput');
             const userQuestion = questionInput.value;
@@ -155,21 +185,19 @@ function addBubbleEventListeners(mode) {
             getAnswerFromAI(userQuestion);
             questionInput.value = '';
         });
-        document.getElementById('continueButton').addEventListener('click', () => {
+        continueBtn.addEventListener('click', () => {
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             playNextVideo();
         });
     }
 }
 
-// --- LÓGICA DA IA (COM MEMÓRIA) ---
 function addToChatLog(sender, message) {
     const role = sender === 'user' ? 'user' : 'model';
     conversationHistory.push({ role: role, parts: [{ text: message }] });
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
         conversationHistory.splice(0, 2);
     }
-
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
     messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
@@ -178,6 +206,7 @@ function addToChatLog(sender, message) {
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
 
+// --- LÓGICA DA IA (COM MEMÓRIA) ---
 function getAnswerFromAI(question) {
     const sendButton = document.getElementById('sendButton');
     const continueButton = document.getElementById('continueButton');
@@ -194,7 +223,7 @@ function getAnswerFromAI(question) {
             history: conversationHistory.slice(0, -1)
         })
     })
-    .then(response => response.json()) // Voltamos a esperar o JSON completo
+    .then(response => response.json())
     .then(data => {
         const answerText = data.answer;
         addToChatLog('bot', answerText);
@@ -210,6 +239,10 @@ function getAnswerFromAI(question) {
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
-        // ... (código de erro)
+        const errorMessage = "Desculpe, estou com problemas de conexão...";
+        addToChatLog('bot', errorMessage);
+        if (sendButton) sendButton.disabled = false;
+        if (continueButton) continueButton.disabled = false;
+        status.textContent = "Status: Erro de comunicação.";
     });
 }
