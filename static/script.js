@@ -180,14 +180,12 @@ function addBubbleEventListeners(mode) {
     }
 }
 
-// --- LÓGICA DA IA (COM STREAMING APRIMORADO) ---
 function addToChatLog(sender, message) {
     const role = sender === 'user' ? 'user' : 'model';
     conversationHistory.push({ role: role, parts: [{ text: message }] });
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
         conversationHistory.splice(0, 2);
     }
-
     if (sender === 'user') {
         const messageElement = document.createElement('p');
         messageElement.className = 'user-message';
@@ -200,11 +198,9 @@ function addToChatLog(sender, message) {
 async function getAnswerFromAI(question) {
     const sendButton = document.getElementById('sendButton');
     const continueButton = document.getElementById('continueButton');
-
     if (sendButton) sendButton.disabled = true;
     if (continueButton) continueButton.disabled = true;
     status.textContent = "Pensando...";
-
     addToChatLog('user', question);
 
     const botMessageElement = document.createElement('p');
@@ -223,19 +219,30 @@ async function getAnswerFromAI(question) {
                 history: conversationHistory.slice(0, -1)
             })
         });
-
         if (!response.ok) throw new Error(`Erro no servidor: ${response.status}`);
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        
+        let buffer = '';
+
         while (true) {
             const { value, done } = await reader.read();
             if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
-            fullResponse += chunk;
-            botMessageElement.innerHTML += chunk.replace(/\n/g, '<br>'); // Substitui quebras de linha por <br>
-            chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+            buffer += decoder.decode(value, { stream: true });
+
+            let parts = buffer.split(' ');
+            if (parts.length > 1) {
+                for (let i = 0; i < parts.length - 1; i++) {
+                    botMessageElement.innerHTML += parts[i] + ' ';
+                    fullResponse += parts[i] + ' ';
+                    await new Promise(resolve => setTimeout(resolve, 50)); // Pequena pausa entre palavras
+                }
+                buffer = parts[parts.length - 1];
+            }
+        }
+        if (buffer) {
+            botMessageElement.innerHTML += buffer;
+            fullResponse += buffer;
         }
 
     } catch (error) {
@@ -245,7 +252,6 @@ async function getAnswerFromAI(question) {
     } finally {
         addToChatLog('bot', fullResponse);
         speak(fullResponse);
-        
         if (sendButton) sendButton.disabled = false;
         if (continueButton) continueButton.disabled = false;
         status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
