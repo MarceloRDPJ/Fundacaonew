@@ -45,12 +45,14 @@ def find_relevant_facts_semantica(user_question):
     best_score = -1
     best_fact_object = None
     
+    # A lógica de busca agora encontra o fato com a maior similaridade para a pergunta atual
     for fact in facts_with_embeddings:
         score = np.dot(question_embedding, fact['embedding'])
         if score > best_score:
             best_score = score
             best_fact_object = fact
             
+    # Limite de confiança para evitar respostas irrelevantes
     CONFIDENCE_THRESHOLD = 0.65
     
     if best_score > CONFIDENCE_THRESHOLD:
