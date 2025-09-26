@@ -59,25 +59,46 @@ def find_relevant_facts_semantica(user_question):
         return best_fact_object
     else:
         return None
+    
+def reformulate_query_with_history(user_question, history):
+    # Se a pergunta já for longa, provavelmente não precisa de reformulação
+    if len(user_question.split()) > 4:
+        return user_question
+
+    formatted_history = "\n".join([f"{item['role'].replace('model', 'assistente')}: {item['parts'][0]['text']}" for item in history])
+    
+    prompt = f"""
+    Com base no histórico da conversa, reescreva a "pergunta curta" do usuário como uma pergunta completa e independente.
+    Responda APENAS com a pergunta reescrita.
+
+    --- HISTÓRICO ---
+    {formatted_history}
+
+    --- PERGUNTA CURTA ---
+    {user_question}
+    """
+    try:
+        model = genai.GenerativeModel('gemini-2.0-flash-lite-001') # Usando o modelo rápido para esta tarefa
+        response = model.generate_content(prompt)
+        # Limpa a resposta para garantir que seja apenas a pergunta
+        reformulated_question = response.text.strip().replace("*", "")
+        print(f"Debug: Pergunta original: '{user_question}' -> Reformulada: '{reformulated_question}'")
+        return reformulated_question
+    except Exception as e:
+        print(f"ERRO ao reformular a pergunta: {e}")
+        return user_question # Retorna a original em caso de erro
 
 # --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
 def generate_gemini_response(user_question, context_fact_object, history):
     if not context_fact_object and not history:
         return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
-
     context_topic = context_fact_object.get('topico', 'Geral') if context_fact_object else 'Geral'
     context_info = context_fact_object.get('informacao', '') if context_fact_object else ''
     formatted_history = "\n".join([f"{item['role'].replace('model', 'assistente')}: {item['parts'][0]['text']}" for item in history])
-    
-    # MUDANÇA 2: Prompt com instruções mais flexíveis e inteligentes
     prompt = f"""
     Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
-    Sua principal tarefa é responder à pergunta do funcionário. Para isso, siga estas diretrizes:
-    1.  Priorize o HISTÓRICO DA CONVERSA para entender o tópico atual e perguntas de acompanhamento.
-    2.  Use a informação da seção "CONTEXTO" como sua principal fonte de verdade para responder à "PERGUNTA ATUAL".
-    3.  Se o CONTEXTO for relevante para a pergunta, formule uma resposta clara e direta usando essa informação.
-    4.  Se o CONTEXTO for sobre o tópico correto, mas não responder diretamente à pergunta, seja prestativo: informe o que você sabe sobre o tópico e admita o que você não sabe. (Ex: "Não tenho a data, mas o valor do benefício é X").
-    5.  Se o CONTEXTO parecer totalmente irrelevante, peça ao usuário para reformular a pergunta.
+    Sua tarefa é responder à pergunta do novo funcionário de forma concisa e direta, usando APENAS a informação de "CONTEXTO" fornecida.
+    Não adicione saudações como 'Olá!' se já houver um histórico de conversa.
 
     --- CONTEXTO (Fonte da Verdade) ---
     {context_info if context_info else "Nenhum."}
@@ -109,8 +130,13 @@ def ask_question():
     user_question = data.get('question')
     history = data.get('history', [])
     
-    relevant_fact_object = find_relevant_facts_semantica(user_question)
+    # 1. ETAPA DE REFORMULAÇÃO
+    standalone_question = reformulate_query_with_history(user_question, history)
+    
+    # 2. ETAPA DE BUSCA (usando a pergunta reformulada)
+    relevant_fact_object = find_relevant_facts_semantica(standalone_question)
+    
+    # 3. ETAPA DE GERAÇÃO (usando a pergunta original para manter a naturalidade)
     answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
     
-    # MUDANÇA: Voltamos a usar jsonify para enviar a resposta completa
     return jsonify({"answer": answer_text})
