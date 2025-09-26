@@ -6,6 +6,7 @@ from flask_cors import CORS
 import google.generativeai as genai
 import numpy as np
 from dotenv import load_dotenv
+import requests
 
 load_dotenv()
 app = Flask(__name__)
@@ -13,6 +14,9 @@ CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
+VOICE_ID = os.getenv("VOICE_ID")
+
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
@@ -26,6 +30,32 @@ def load_knowledge_base():
         return json.load(f)
 knowledge_base = load_knowledge_base()
 facts_with_embeddings = [fact for fact in knowledge_base['fatos'] if 'embedding' in fact and fact['embedding']]
+
+def generate_elevenlabs_audio(text):
+    if not ELEVENLABS_API_KEY or not VOICE_ID:
+        print("AVISO: Chaves do ElevenLabs não configuradas. A voz não será gerada.")
+        return None
+    
+    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+    headers = { "Accept": "audio/mpeg", "Content-Type": "application/json", "xi-api-key": ELEVENLABS_API_KEY }
+    data = { "text": text, "model_id": "eleven_multilingual_v2", "voice_settings": { "stability": 0.5, "similarity_boost": 0.75 } }
+    
+    try:
+        response = requests.post(tts_url, json=data, headers=headers)
+        response.raise_for_status()
+        
+        audio_folder = os.path.join(app.static_folder, 'audio')
+        os.makedirs(audio_folder, exist_ok=True)
+        audio_file_path = os.path.join(audio_folder, "response.mp3")
+        
+        with open(audio_file_path, "wb") as f:
+            f.write(response.content)
+            
+        return "/static/audio/response.mp3"
+    except requests.exceptions.RequestException as e:
+        print(f"ERRO CRÍTICO ao chamar a API do ElevenLabs: {e}")
+        return None
+    
 
 # --- FUNÇÕES DE PROCESSAMENTO E BUSCA ---
 def normalize_text(text):
@@ -130,13 +160,18 @@ def ask_question():
     user_question = data.get('question')
     history = data.get('history', [])
     
-    # 1. ETAPA DE REFORMULAÇÃO
-    standalone_question = reformulate_query_with_history(user_question, history)
+    # 1. Busca (Retrieval)
+    relevant_fact_object = find_relevant_facts_semantica(user_question)
     
-    # 2. ETAPA DE BUSCA (usando a pergunta reformulada)
-    relevant_fact_object = find_relevant_facts_semantica(standalone_question)
-    
-    # 3. ETAPA DE GERAÇÃO (usando a pergunta original para manter a naturalidade)
+    # 2. Geração de Texto com Gemini
     answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
     
-    return jsonify({"answer": answer_text})
+    # 3. Geração de Áudio com ElevenLabs
+    audio_url = generate_elevenlabs_audio(answer_text)
+    
+    if not audio_url:
+        # Se a geração de áudio falhar, a voz do navegador ainda pode ser usada como fallback
+        print("Falha na geração de áudio, retornando apenas texto.")
+        return jsonify({"answer": answer_text})
+
+    return jsonify({"answer": answer_text, "audio_url": audio_url})
