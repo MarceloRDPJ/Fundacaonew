@@ -15,13 +15,10 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
+    { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
+    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
 ];
-const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
-
-const DEFAULT_PASSWORD = "Tiradentes@10";
-
+const GOOGLE_DRIVE_LINK = "SEU_LINK_DA_PROVA_AQUI"; // Substitua pelo seu link da prova
 
 let currentVideoIndex = -1;
 let player;
@@ -31,14 +28,19 @@ const MAX_HISTORY_LENGTH = 6;
 let ptBrVoices = [];
 
 // --- LÓGICA DE VOZ DO NAVEGADOR ---
-function loadVoices() { ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR'); }
+function loadVoices() {
+    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+}
 loadVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = loadVoices; }
-
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    if (ptBrVoices.length > 0) { utterance.voice = ptBrVoices[0]; }
+    if (ptBrVoices.length > 0) {
+        utterance.voice = ptBrVoices[0];
+    }
     utterance.lang = 'pt-BR';
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
@@ -51,7 +53,10 @@ window.onload = () => {
 
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
-    if (userName === "") { alert("Por favor, digite seu nome."); return; }
+    if (userName === "") {
+        alert("Por favor, digite seu nome.");
+        return;
+    }
     const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
     updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
@@ -60,16 +65,13 @@ submitNameBtn.addEventListener('click', () => {
 function startJourney() {
     window.speechSynthesis.cancel();
     
-    // Esconde a logo central e o balão
     const assistantLogo = assistantContainer.querySelector('.assistant-logo-centered');
     if (assistantLogo) assistantLogo.classList.add('hidden');
     assistantBubble.classList.add('hidden');
     
-    // Anima o container para o canto
     assistantContainer.classList.remove('assistant-centered');
     assistantContainer.classList.add('assistant-corner');
     
-    // Mostra o conteúdo principal e a logo do canto
     mainContent.classList.remove('hidden');
     logoTopLeft.classList.remove('hidden');
     playNextVideo();
@@ -86,8 +88,9 @@ function loadVideoByIndex(index) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
                 playerVars: { 
-                    'autoplay': 1, 'controls': 1, 'modestbranding': 1,
-                    // CORREÇÃO CRÍTICA: Garante que o player funcione no Render
+                    'autoplay': 1, 
+                    'controls': 1, 
+                    'modestbranding': 1,
                     'origin': window.location.origin 
                 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
@@ -128,7 +131,6 @@ function playNextVideo() {
         if (mainContainer) mainContainer.innerHTML = ''; // Limpa o conteúdo
         
         finalSection.classList.remove('hidden');
-        // Adiciona a seção final dentro do container principal para melhor alinhamento
         if (mainContainer) mainContainer.appendChild(finalSection);
         status.textContent = "Status: Finalizado.";
     }
@@ -190,18 +192,15 @@ function addToChatLog(sender, message) {
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
         conversationHistory.splice(0, 2);
     }
-    if (sender === 'user') {
-        const messageElement = document.createElement('p');
-        messageElement.className = 'user-message';
-        messageElement.innerHTML = `<strong>Você:</strong> ${message}`;
-        chatLog.appendChild(messageElement);
-        chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
-    } else { // Para o bot, lidamos com streaming
-        // O elemento visual é criado e atualizado em getAnswerFromAI
-    }
+    const messageElement = document.createElement('p');
+    const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
+    messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
+    messageElement.innerHTML = `<strong>${senderPrefix}:</strong> ${message}`;
+    chatLog.appendChild(messageElement);
+    chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
 
-async function getAnswerFromAI(question) {
+function getAnswerFromAI(question) {
     const sendButton = document.getElementById('sendButton');
     const continueButton = document.getElementById('continueButton');
     if (sendButton) sendButton.disabled = true;
@@ -209,48 +208,34 @@ async function getAnswerFromAI(question) {
     status.textContent = "Pensando...";
     addToChatLog('user', question);
 
-    const botMessageElement = document.createElement('p');
-    botMessageElement.className = 'bot-message';
-    botMessageElement.innerHTML = `<strong>Assistente:</strong> `;
-    chatLog.appendChild(botMessageElement);
-
-    let fullResponse = "";
-    
-    try {
-        const response = await fetch('/ask', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                question: question,
-                history: conversationHistory.slice(0, -1)
-            })
-        });
-        if (!response.ok) throw new Error(`Erro no servidor: ${response.status}`);
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
+    fetch('/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            question: question,
+            history: conversationHistory.slice(0, -1)
+        })
+    })
+    .then(response => response.json()) // Espera o JSON completo
+    .then(data => {
+        const answerText = data.answer;
+        addToChatLog('bot', answerText);
         
-        while (true) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            const chunk = decoder.decode(value, { stream: true });
-            fullResponse += chunk;
-            botMessageElement.innerHTML += chunk.replace(/\n/g, '<br>');
-            chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
-        }
-
-    } catch (error) {
+        speak(answerText, () => {
+            if (sendButton) sendButton.disabled = false;
+            if (continueButton) continueButton.disabled = false;
+            status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
+            if(document.getElementById('questionInput')) {
+                document.getElementById('questionInput').focus();
+            }
+        });
+    })
+    .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
-        fullResponse = "Desculpe, estou com problemas de conexão...";
-        botMessageElement.innerHTML = `<strong>Assistente:</strong> ${fullResponse}`;
-    } finally {
-        addToChatLog('bot', fullResponse);
-        speak(fullResponse);
+        const errorMessage = "Desculpe, estou com problemas de conexão...";
+        addToChatLog('bot', errorMessage);
         if (sendButton) sendButton.disabled = false;
         if (continueButton) continueButton.disabled = false;
-        status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-        if(document.getElementById('questionInput')) {
-            document.getElementById('questionInput').focus();
-        }
-    }
+        status.textContent = "Status: Erro de comunicação.";
+    });
 }
