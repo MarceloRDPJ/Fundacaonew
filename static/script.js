@@ -4,6 +4,8 @@ const assistantContainer = document.getElementById('assistant-container');
 const assistantBubble = document.getElementById('assistant-bubble');
 const nameInput = document.getElementById('name-input');
 const submitNameBtn = document.getElementById('submit-name-btn');
+const logoTopLeft = document.getElementById('logo-top-left');
+
 const videoTitle = document.getElementById('videoTitle');
 const status = document.getElementById('status');
 const chatLogContainer = document.querySelector('.chat-log-container');
@@ -13,13 +15,10 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
+    { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
+    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
 ];
-const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
-
-const DEFAULT_PASSWORD = "Tiradentes@10";
-
+const GOOGLE_DRIVE_LINK = "SEU_LINK_DA_PROVA_AQUI";
 
 let currentVideoIndex = -1;
 let player;
@@ -29,19 +28,14 @@ const MAX_HISTORY_LENGTH = 6;
 let ptBrVoices = [];
 
 // --- LÓGICA DE VOZ DO NAVEGADOR ---
-function loadVoices() {
-    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
-}
+function loadVoices() { ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR'); }
 loadVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) {
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-}
+if (window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = loadVoices; }
+
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    if (ptBrVoices.length > 0) {
-        utterance.voice = ptBrVoices[0];
-    }
+    if (ptBrVoices.length > 0) { utterance.voice = ptBrVoices[0]; }
     utterance.lang = 'pt-BR';
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
@@ -54,10 +48,7 @@ window.onload = () => {
 
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
-    if (userName === "") {
-        alert("Por favor, digite seu nome.");
-        return;
-    }
+    if (userName === "") { alert("Por favor, digite seu nome."); return; }
     const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
     updateAssistantBubble(welcomeMessage, "start");
     speak(welcomeMessage);
@@ -65,12 +56,19 @@ submitNameBtn.addEventListener('click', () => {
 
 function startJourney() {
     window.speechSynthesis.cancel();
+    
+    // Esconde a logo central e o balão
+    const assistantLogo = assistantContainer.querySelector('.assistant-logo-centered');
+    if (assistantLogo) assistantLogo.classList.add('hidden');
     assistantBubble.classList.add('hidden');
-    const assistantLogo = assistantContainer.querySelector('img');
-    if (assistantLogo) assistantLogo.style.display = 'none';
+    
+    // Anima o container para o canto
     assistantContainer.classList.remove('assistant-centered');
     assistantContainer.classList.add('assistant-corner');
+    
+    // Mostra o conteúdo principal e a logo do canto
     mainContent.classList.remove('hidden');
+    logoTopLeft.classList.remove('hidden');
     playNextVideo();
 }
 
@@ -85,11 +83,9 @@ function loadVideoByIndex(index) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
                 playerVars: { 
-                    'autoplay': 1, 
-                    'controls': 1, 
-                    'modestbranding': 1,
-                    // CORREÇÃO CRÍTICA: Adicionado para evitar erros de permissão no Render
-                    'origin': window.location.origin
+                    'autoplay': 1, 'controls': 1, 'modestbranding': 1,
+                    // CORREÇÃO CRÍTICA: Garante que o player funcione no Render
+                    'origin': window.location.origin 
                 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
@@ -102,13 +98,11 @@ function loadVideoByIndex(index) {
 
 function onPlayerReady(event) {
     status.textContent = "Status: Reproduzindo vídeo...";
-    status.style.color = "#eaf0ff"; // Cor do texto clara para o fundo escuro
 }
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
-        status.style.color = "#eaf0ff";
         updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
         assistantBubble.classList.remove('hidden');
     }
@@ -121,21 +115,19 @@ function playNextVideo() {
     chatLog.innerHTML = '';
     conversationHistory = [];
     currentVideoIndex++;
-
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
         assistantContainer.classList.add('hidden');
-        videoTitle.classList.add('hidden');
-        document.getElementById('video-player-container').classList.add('hidden');
-        status.textContent = "Status: Finalizado.";
-        status.classList.add("finalizado"); // Adiciona classe para cor escura
-        proofLink.href = GOOGLE_DRIVE_LINK;
+        logoTopLeft.classList.add('hidden');
+        mainContent.classList.remove('hidden');
+        const mainContainer = document.querySelector('#main-content .container');
+        if (mainContainer) mainContainer.innerHTML = ''; // Limpa o conteúdo
+        
         finalSection.classList.remove('hidden');
-    }
-    const assistantLogo = assistantContainer.querySelector('img');
-    if (assistantLogo && assistantContainer.classList.contains('assistant-corner')) {
-        assistantLogo.style.display = '';
+        // Adiciona a seção final dentro do container principal para melhor alinhamento
+        if (mainContainer) mainContainer.appendChild(finalSection);
+        status.textContent = "Status: Finalizado.";
     }
 }
 
@@ -145,15 +137,6 @@ function updateAssistantBubble(text, mode) {
         content += `<button id="start-journey-btn">Vamos Começar!</button>`;
     } else if (mode === "prompt") {
         content += `<div><button id="post-video-yes">Sim</button><button id="post-video-no">Não</button></div>`;
-    } else if (mode === "qa") {
-        content = `
-            <div id="qaSection">
-                <form id="questionForm" class="question-form">
-                    <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
-                    <button type="submit" id="sendButton">Enviar</button>
-                </form>
-                <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
-            </div>`;
     }
     assistantBubble.innerHTML = content;
     addBubbleEventListeners(mode);
@@ -163,23 +146,26 @@ function addBubbleEventListeners(mode) {
     if (mode === "start") {
         document.getElementById('start-journey-btn').addEventListener('click', startJourney);
     } else if (mode === "prompt") {
-        const yesBtn = document.getElementById('post-video-yes');
-        const noBtn = document.getElementById('post-video-no');
-        
-        yesBtn.addEventListener('click', () => {
-            updateAssistantBubble("", "qa");
+        document.getElementById('post-video-yes').addEventListener('click', () => {
+            const qaContent = `
+                <div id="qaSection">
+                    <form id="questionForm" class="question-form">
+                        <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
+                        <button type="submit" id="sendButton">Enviar</button>
+                    </form>
+                    <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
+                </div>`;
+            assistantBubble.innerHTML = qaContent;
+            addBubbleEventListeners("qa_inner");
             chatLogContainer.classList.remove('hidden');
             document.getElementById('questionInput').focus();
         });
-        noBtn.addEventListener('click', () => {
+        document.getElementById('post-video-no').addEventListener('click', () => {
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             playNextVideo();
         });
-    } else if (mode === "qa") {
-        const form = document.getElementById('questionForm');
-        const continueBtn = document.getElementById('continueButton');
-        
-        form.addEventListener('submit', (event) => {
+    } else if (mode === "qa_inner") {
+        document.getElementById('questionForm').addEventListener('submit', (event) => {
             event.preventDefault();
             const questionInput = document.getElementById('questionInput');
             const userQuestion = questionInput.value;
@@ -187,29 +173,32 @@ function addBubbleEventListeners(mode) {
             getAnswerFromAI(userQuestion);
             questionInput.value = '';
         });
-        continueBtn.addEventListener('click', () => {
+        document.getElementById('continueButton').addEventListener('click', () => {
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             playNextVideo();
         });
     }
 }
 
+// --- LÓGICA DA IA (COM MEMÓRIA) ---
 function addToChatLog(sender, message) {
     const role = sender === 'user' ? 'user' : 'model';
     conversationHistory.push({ role: role, parts: [{ text: message }] });
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
         conversationHistory.splice(0, 2);
     }
-    const messageElement = document.createElement('p');
-    const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
-    messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
-    messageElement.innerHTML = `<strong>${senderPrefix}:</strong> ${message}`;
-    chatLog.appendChild(messageElement);
-    chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+    if (sender === 'user') {
+        const messageElement = document.createElement('p');
+        messageElement.className = 'user-message';
+        messageElement.innerHTML = `<strong>Você:</strong> ${message}`;
+        chatLog.appendChild(messageElement);
+        chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+    } else { // Para o bot, lidamos com streaming
+        // O elemento visual é criado e atualizado em getAnswerFromAI
+    }
 }
 
-// --- LÓGICA DA IA (COM MEMÓRIA) ---
-function getAnswerFromAI(question) {
+async function getAnswerFromAI(question) {
     const sendButton = document.getElementById('sendButton');
     const continueButton = document.getElementById('continueButton');
     if (sendButton) sendButton.disabled = true;
@@ -217,34 +206,48 @@ function getAnswerFromAI(question) {
     status.textContent = "Pensando...";
     addToChatLog('user', question);
 
-    fetch('/ask', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            question: question,
-            history: conversationHistory.slice(0, -1)
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        const answerText = data.answer;
-        addToChatLog('bot', answerText);
-        
-        speak(answerText, () => {
-            if (sendButton) sendButton.disabled = false;
-            if (continueButton) continueButton.disabled = false;
-            status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-            if(document.getElementById('questionInput')) {
-                document.getElementById('questionInput').focus();
-            }
+    const botMessageElement = document.createElement('p');
+    botMessageElement.className = 'bot-message';
+    botMessageElement.innerHTML = `<strong>Assistente:</strong> `;
+    chatLog.appendChild(botMessageElement);
+
+    let fullResponse = "";
+    
+    try {
+        const response = await fetch('/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                question: question,
+                history: conversationHistory.slice(0, -1)
+            })
         });
-    })
-    .catch(error => {
+        if (!response.ok) throw new Error(`Erro no servidor: ${response.status}`);
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            const chunk = decoder.decode(value, { stream: true });
+            fullResponse += chunk;
+            botMessageElement.innerHTML += chunk.replace(/\n/g, '<br>');
+            chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
+        }
+
+    } catch (error) {
         console.error('Erro ao se comunicar com a IA:', error);
-        const errorMessage = "Desculpe, estou com problemas de conexão...";
-        addToChatLog('bot', errorMessage);
+        fullResponse = "Desculpe, estou com problemas de conexão...";
+        botMessageElement.innerHTML = `<strong>Assistente:</strong> ${fullResponse}`;
+    } finally {
+        addToChatLog('bot', fullResponse);
+        speak(fullResponse);
         if (sendButton) sendButton.disabled = false;
         if (continueButton) continueButton.disabled = false;
-        status.textContent = "Status: Erro de comunicação.";
-    });
+        status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
+        if(document.getElementById('questionInput')) {
+            document.getElementById('questionInput').focus();
+        }
+    }
 }
