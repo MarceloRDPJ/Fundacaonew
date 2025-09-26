@@ -53,7 +53,7 @@ def find_relevant_facts_semantica(user_question):
             best_fact_object = fact
             
     # Limite de confiança para evitar respostas irrelevantes
-    CONFIDENCE_THRESHOLD = 0.65
+    CONFIDENCE_THRESHOLD = 0.60
     
     if best_score > CONFIDENCE_THRESHOLD:
         return best_fact_object
@@ -62,24 +62,25 @@ def find_relevant_facts_semantica(user_question):
 
 # --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
 def generate_gemini_response(user_question, context_fact_object, history):
-    # Se a busca não encontrou nada E não há histórico, retorna a mensagem padrão.
     if not context_fact_object and not history:
         return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
 
-    # Prepara o contexto e o histórico
-    context_info = context_fact_object.get('informacao', '') if context_fact_object else "Nenhuma."
+    context_topic = context_fact_object.get('topico', 'Geral') if context_fact_object else 'Geral'
+    context_info = context_fact_object.get('informacao', '') if context_fact_object else ''
     formatted_history = "\n".join([f"{item['role'].replace('model', 'assistente')}: {item['parts'][0]['text']}" for item in history])
     
-    # PROMPT APRIMORADO COM REGRAS RÍGIDAS
+    # MUDANÇA 2: Prompt com instruções mais flexíveis e inteligentes
     prompt = f"""
-    Você é a C.I.A., uma assistente de RH da Fundação Tiradentes. Siga estas regras rigorosamente:
-    REGRA 1: Sua ÚNICA fonte de conhecimento é a seção "CONTEXTO". Nunca use conhecimento externo.
-    REGRA 2: O "HISTÓRICO DA CONVERSA" tem a maior prioridade para entender a "PERGUNTA ATUAL". A pergunta atual é uma continuação direta da última mensagem do histórico.
-    REGRA 3: Se a informação na seção "CONTEXTO" não for suficiente para responder à "PERGUNTA ATUAL", responda EXATAMENTE com a frase: "A informação sobre isso não está na minha base de dados."
-    REGRA 4: Seja sempre direto e conciso, sem saudações desnecessárias.
+    Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
+    Sua principal tarefa é responder à pergunta do funcionário. Para isso, siga estas diretrizes:
+    1.  Priorize o HISTÓRICO DA CONVERSA para entender o tópico atual e perguntas de acompanhamento.
+    2.  Use a informação da seção "CONTEXTO" como sua principal fonte de verdade para responder à "PERGUNTA ATUAL".
+    3.  Se o CONTEXTO for relevante para a pergunta, formule uma resposta clara e direta usando essa informação.
+    4.  Se o CONTEXTO for sobre o tópico correto, mas não responder diretamente à pergunta, seja prestativo: informe o que você sabe sobre o tópico e admita o que você não sabe. (Ex: "Não tenho a data, mas o valor do benefício é X").
+    5.  Se o CONTEXTO parecer totalmente irrelevante, peça ao usuário para reformular a pergunta.
 
     --- CONTEXTO (Fonte da Verdade) ---
-    {context_info}
+    {context_info if context_info else "Nenhum."}
 
     --- HISTÓRICO DA CONVERSA ---
     {formatted_history}
