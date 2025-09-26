@@ -82,7 +82,7 @@ def generate_gemini_response(user_question, context_fact_object, history):
     """
     
     try:
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
