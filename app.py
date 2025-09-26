@@ -7,7 +7,9 @@ import google.generativeai as genai
 import numpy as np
 from dotenv import load_dotenv
 
+# Carrega as variáveis de ambiente (para desenvolvimento local)
 load_dotenv()
+
 app = Flask(__name__)
 CORS(app)
 
@@ -16,18 +18,24 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
-    print("ERRO: Chave da API do Gemini não encontrada.")
+    print("AVISO: Chave da API do Gemini não encontrada. Verifique seu arquivo .env")
 
 EMBEDDING_MODEL = "models/text-embedding-004"
 
-# --- CARREGANDO A BASE DE CONHECIMENTO ---
+# --- CARREGANDO A BASE DE CONHECIMENTO COM EMBEDDINGS ---
 def load_knowledge_base():
-    with open('knowledge_base_com_embeddings.json', 'r', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open('knowledge_base_com_embeddings.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("ERRO: O arquivo 'knowledge_base_com_embeddings.json' não foi encontrado.")
+        print("Por favor, execute o script 'criar_embeddings.py' primeiro.")
+        return {"fatos": []} # Retorna uma base vazia para não travar o app
+
 knowledge_base = load_knowledge_base()
 facts_with_embeddings = [fact for fact in knowledge_base['fatos'] if 'embedding' in fact and fact['embedding']]
 
-# --- FUNÇÕES DE PROCESSAMENTO E BUSCA ---
+# --- FUNÇÕES DE PROCESSAMENTO E BUSCA SEMÂNTICA ---
 def normalize_text(text):
     if not text: return ""
     return ''.join(c for c in unicodedata.normalize('NFD', text) if unicodedata.category(c) != 'Mn').lower()
@@ -45,79 +53,49 @@ def find_relevant_facts_semantica(user_question):
     best_score = -1
     best_fact_object = None
     
-    # A lógica de busca agora encontra o fato com a maior similaridade para a pergunta atual
     for fact in facts_with_embeddings:
         score = np.dot(question_embedding, fact['embedding'])
         if score > best_score:
             best_score = score
             best_fact_object = fact
             
-    # Limite de confiança para evitar respostas irrelevantes
-    CONFIDENCE_THRESHOLD = 0.60
+    CONFIDENCE_THRESHOLD = 0.65
     
     if best_score > CONFIDENCE_THRESHOLD:
         return best_fact_object
     else:
         return None
-    
-def reformulate_query_with_history(user_question, history):
-    # Se a pergunta já for longa, provavelmente não precisa de reformulação
-    if len(user_question.split()) > 4:
-        return user_question
-
-    formatted_history = "\n".join([f"{item['role'].replace('model', 'assistente')}: {item['parts'][0]['text']}" for item in history])
-    
-    prompt = f"""
-    Com base no histórico da conversa, reescreva a "pergunta curta" do usuário como uma pergunta completa e independente.
-    Responda APENAS com a pergunta reescrita.
-
-    --- HISTÓRICO ---
-    {formatted_history}
-
-    --- PERGUNTA CURTA ---
-    {user_question}
-    """
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash-latest') # Usando o modelo rápido para esta tarefa
-        response = model.generate_content(prompt)
-        # Limpa a resposta para garantir que seja apenas a pergunta
-        reformulated_question = response.text.strip().replace("*", "")
-        print(f"Debug: Pergunta original: '{user_question}' -> Reformulada: '{reformulated_question}'")
-        return reformulated_question
-    except Exception as e:
-        print(f"ERRO ao reformular a pergunta: {e}")
-        return user_question # Retorna a original em caso de erro
 
 # --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
 def generate_gemini_response(user_question, context_fact_object, history):
     if not context_fact_object and not history:
         return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
+
     context_topic = context_fact_object.get('topico', 'Geral') if context_fact_object else 'Geral'
     context_info = context_fact_object.get('informacao', '') if context_fact_object else ''
+    
     formatted_history = "\n".join([f"{item['role'].replace('model', 'assistente')}: {item['parts'][0]['text']}" for item in history])
+    
     prompt = f"""
     Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
     Sua tarefa é responder à pergunta do novo funcionário de forma concisa e direta, usando APENAS a informação de "CONTEXTO" fornecida.
     Não adicione saudações como 'Olá!' se já houver um histórico de conversa.
 
-    --- CONTEXTO (Fonte da Verdade) ---
+    --- CONTEXTO ---
     {context_info if context_info else "Nenhum."}
-
     --- HISTÓRICO DA CONVERSA ---
     {formatted_history}
-
     --- PERGUNTA ATUAL DO FUNCIONÁRIO ---
     {user_question}
     """
     
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash-lite-001') # Mantendo o modelo mais poderoso que funcionou
+        model = genai.GenerativeModel('gemini-2.0-flash-lite-001')
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
         print(f"ERRO CRÍTICO ao chamar a API do Gemini: {e}")
         return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
-
 
 # --- ROTAS DA APLICAÇÃO ---
 @app.route('/')
@@ -130,13 +108,12 @@ def ask_question():
     user_question = data.get('question')
     history = data.get('history', [])
     
-    # 1. ETAPA DE REFORMULAÇÃO
-    standalone_question = reformulate_query_with_history(user_question, history)
-    
-    # 2. ETAPA DE BUSCA (usando a pergunta reformulada)
-    relevant_fact_object = find_relevant_facts_semantica(standalone_question)
-    
-    # 3. ETAPA DE GERAÇÃO (usando a pergunta original para manter a naturalidade)
+    relevant_fact_object = find_relevant_facts_semantica(user_question)
     answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
     
+    # Retorna apenas o texto da resposta
     return jsonify({"answer": answer_text})
+
+# --- BLOCO PARA EXECUÇÃO LOCAL ---
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000, debug=True)
