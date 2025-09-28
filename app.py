@@ -86,7 +86,7 @@ def generate_gemini_response(user_question, context_fact_object, history):
     
     try:
         # Usando o modelo que sabemos que funciona para sua conta
-        model = genai.GenerativeModel('gemini-1.5-pro-latest') 
+        model = genai.GenerativeModel('gemini-2.0-flash-lite-001') 
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
