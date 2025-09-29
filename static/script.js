@@ -15,14 +15,13 @@ const proofLink = document.getElementById('proofLink');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
-    { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
+    { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
+    { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
 ];
-const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
-
+const GOOGLE_DRIVE_LINK = "SEU_LINK_DA_PROVA_AQUI";
 const DEFAULT_PASSWORD = "Tiradentes@10";
 
-
+// --- Variáveis de Estado ---
 let currentVideoIndex = -1;
 let player;
 let userName = "";
@@ -31,22 +30,49 @@ const MAX_HISTORY_LENGTH = 6;
 let ptBrVoices = [];
 
 // --- LÓGICA DE VOZ DO NAVEGADOR ---
-function loadVoices() {
-    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
-}
+function loadVoices() { ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR'); }
 loadVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) {
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-}
+if (window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = loadVoices; }
+
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    if (ptBrVoices.length > 0) {
-        utterance.voice = ptBrVoices[0];
-    }
+    if (ptBrVoices.length > 0) { utterance.voice = ptBrVoices[0]; }
     utterance.lang = 'pt-BR';
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
+}
+
+// --- FUNÇÕES DE LÓGICA E UTILIDADES ---
+/**
+ * Gera um nome de usuário inteligente no formato 'primeironome.ultimonome', ignorando preposições.
+ */
+function generateUsername(fullName) {
+    if (!fullName) return "";
+    const prepositions = new Set(['de', 'da', 'do', 'das', 'dos']);
+    const normalized = fullName.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const parts = normalized.split(' ').filter(part => part && !prepositions.has(part));
+    if (parts.length === 0) return "";
+    if (parts.length === 1) return parts[0];
+    return `${parts[0]}.${parts[parts.length - 1]}`;
+}
+
+/**
+ * Copia a senha e dá um feedback visual.
+ */
+function copyPassword(buttonElement) {
+    navigator.clipboard.writeText(DEFAULT_PASSWORD).then(() => {
+        const originalText = buttonElement.innerHTML;
+        buttonElement.innerHTML = "Copiado!";
+        buttonElement.disabled = true;
+        setTimeout(() => {
+            buttonElement.innerHTML = originalText;
+            buttonElement.disabled = false;
+        }, 2000); // Volta ao normal após 2 segundos
+    }).catch(err => {
+        console.error('Falha ao copiar a senha: ', err);
+        alert("Não foi possível copiar a senha.");
+    });
 }
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
@@ -56,31 +82,53 @@ window.onload = () => {
 
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
-    if (userName === "") {
-        alert("Por favor, digite seu nome.");
-        return;
-    }
-    const welcomeMessage = `Prazer em conhecer, ${userName}! Sou a C.I.A., sua Companheira de Integração. Quando estiver pronto(a), vamos começar.`;
-    updateAssistantBubble(welcomeMessage, "start");
-    speak(welcomeMessage);
+    if (userName === "") { alert("Por favor, digite seu nome completo."); return; }
+
+    const generatedUser = generateUsername(userName);
+    const credentialsMessage = `Ótimo, ${userName.split(' ')[0]}! Suas credenciais de primeiro acesso estão abaixo. Anote-as em um local seguro.`;
+
+    // Atualiza o balão para mostrar as credenciais
+    assistantBubble.innerHTML = `
+        <p>${credentialsMessage}</p>
+        <div class="credentials-box">
+            <div class="credential-item">
+                <span>Usuário:</span>
+                <code>${generatedUser}</code>
+            </div>
+            <div class="credential-item">
+                <span>Senha Padrão:</span>
+                <code>${DEFAULT_PASSWORD}</code>
+                <button class="copy-btn" id="copy-password-btn" title="Copiar senha">📋</button>
+            </div>
+        </div>
+        <button id="ack-credentials-btn">Entendi, anotei minhas credenciais</button>
+    `;
+    speak(credentialsMessage);
+
+    // Adiciona os eventos aos novos botões
+    document.getElementById('copy-password-btn').addEventListener('click', function() {
+        copyPassword(this);
+    });
+    document.getElementById('ack-credentials-btn').addEventListener('click', () => {
+        const welcomeMessage = `Perfeito! Quando estiver pronto(a) para começar sua jornada de integração, clique no botão abaixo.`;
+        updateAssistantBubble(welcomeMessage, "start");
+        speak(welcomeMessage);
+    });
 });
 
 function startJourney() {
     window.speechSynthesis.cancel();
-    
     const assistantLogo = assistantContainer.querySelector('.assistant-logo-centered');
     if (assistantLogo) assistantLogo.classList.add('hidden');
     assistantBubble.classList.add('hidden');
-    
     assistantContainer.classList.remove('assistant-centered');
     assistantContainer.classList.add('assistant-corner');
-    
     mainContent.classList.remove('hidden');
     logoTopLeft.classList.remove('hidden');
     playNextVideo();
 }
 
-// --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
+// --- FUNÇÕES DA API DO YOUTUBE PLAYER E CONTROLE DE FLUXO ---
 function onYouTubeIframeAPIReady() {}
 
 function loadVideoByIndex(index) {
@@ -90,12 +138,7 @@ function loadVideoByIndex(index) {
         if (!player) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
-                playerVars: { 
-                    'autoplay': 1, 
-                    'controls': 1, 
-                    'modestbranding': 1,
-                    'origin': window.location.origin 
-                },
+                playerVars: { 'autoplay': 1, 'controls': 1, 'modestbranding': 1, 'origin': window.location.origin },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
         } else {
@@ -105,9 +148,7 @@ function loadVideoByIndex(index) {
     }
 }
 
-function onPlayerReady(event) {
-    status.textContent = "Status: Reproduzindo vídeo...";
-}
+function onPlayerReady(event) { status.textContent = "Status: Reproduzindo vídeo..."; }
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
@@ -117,7 +158,6 @@ function onPlayerStateChange(event) {
     }
 }
 
-// --- FUNÇÕES DE CONTROLE DE FLUXO E UI ---
 function playNextVideo() {
     assistantBubble.classList.add('hidden');
     chatLogContainer.classList.add('hidden');
@@ -131,8 +171,7 @@ function playNextVideo() {
         logoTopLeft.classList.add('hidden');
         mainContent.classList.remove('hidden');
         const mainContainer = document.querySelector('#main-content .container');
-        if (mainContainer) mainContainer.innerHTML = ''; // Limpa o conteúdo
-        
+        if (mainContainer) mainContainer.innerHTML = '';
         finalSection.classList.remove('hidden');
         if (mainContainer) mainContainer.appendChild(finalSection);
         status.textContent = "Status: Finalizado.";
@@ -219,11 +258,10 @@ function getAnswerFromAI(question) {
             history: conversationHistory.slice(0, -1)
         })
     })
-    .then(response => response.json()) // Espera o JSON completo
+    .then(response => response.json())
     .then(data => {
         const answerText = data.answer;
         addToChatLog('bot', answerText);
-        
         speak(answerText, () => {
             if (sendButton) sendButton.disabled = false;
             if (continueButton) continueButton.disabled = false;
@@ -235,10 +273,5 @@ function getAnswerFromAI(question) {
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
-        const errorMessage = "Desculpe, estou com problemas de conexão...";
-        addToChatLog('bot', errorMessage);
-        if (sendButton) sendButton.disabled = false;
-        if (continueButton) continueButton.disabled = false;
-        status.textContent = "Status: Erro de comunicação.";
     });
 }

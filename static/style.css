@@ -139,3 +139,56 @@ body::before {
     background-color: #5a4bb7; transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.25);
 }
 .inline-form button { padding: 10px 20px; font-size: 15px; }
+
+/* --- Estilos para a caixa de credenciais --- */
+.credentials-box {
+    background-color: #e2e1e4; /* Tom mais alinhado com o novo design */
+    border: 1px dashed #cccccc;
+    border-radius: 12px; /* Cantos mais arredondados */
+    padding: 20px;
+    margin: 20px 0;
+    text-align: left;
+    color: #333; /* Texto escuro para o fundo claro */
+}
+
+.credential-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 16px;
+}
+
+.credential-item:last-child {
+    margin-bottom: 0;
+}
+
+.credential-item span {
+    font-weight: 600; /* Um pouco mais forte */
+    color: #495057;
+    margin-right: 10px;
+}
+
+.credential-item code {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-family: Consolas, monaco, monospace;
+    font-size: 15px;
+}
+
+.copy-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: 8px;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.copy-btn:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
