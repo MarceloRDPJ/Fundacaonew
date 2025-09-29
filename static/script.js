@@ -1,11 +1,10 @@
-// --- CONFIGURAÇÃO INICIAL ---
+// --- CONFIGURAÇÃO INICIAL E DADOS ---
 const mainContent = document.getElementById('main-content');
 const assistantContainer = document.getElementById('assistant-container');
 const assistantBubble = document.getElementById('assistant-bubble');
 const nameInput = document.getElementById('name-input');
 const submitNameBtn = document.getElementById('submit-name-btn');
 const logoTopLeft = document.getElementById('logo-top-left');
-
 const videoTitle = document.getElementById('videoTitle');
 const status = document.getElementById('status');
 const chatLogContainer = document.querySelector('.chat-log-container');
@@ -13,7 +12,6 @@ const chatLog = document.getElementById('chatLog');
 const finalSection = document.getElementById('finalSection');
 const proofLink = document.getElementById('proofLink');
 
-// --- DADOS DO PROJETO ---
 const playlist = [
     { title: "Tópico 1: Boas-vindas", id: "ID_DO_SEU_VIDEO_1_AQUI" },
     { title: "Tópico 2: Apresentando os Benefícios", id: "ID_DO_SEU_VIDEO_2_AQUI" }
@@ -21,7 +19,6 @@ const playlist = [
 const GOOGLE_DRIVE_LINK = "SEU_LINK_DA_PROVA_AQUI";
 const DEFAULT_PASSWORD = "Tiradentes@10";
 
-// --- Variáveis de Estado ---
 let currentVideoIndex = -1;
 let player;
 let userName = "";
@@ -44,9 +41,6 @@ function speak(text, onEndCallback) {
 }
 
 // --- FUNÇÕES DE LÓGICA E UTILIDADES ---
-/**
- * Gera um nome de usuário inteligente no formato 'primeironome.ultimonome', ignorando preposições.
- */
 function generateUsername(fullName) {
     if (!fullName) return "";
     const prepositions = new Set(['de', 'da', 'do', 'das', 'dos']);
@@ -58,10 +52,12 @@ function generateUsername(fullName) {
 }
 
 /**
- * Copia a senha e dá um feedback visual.
+ * MUDANÇA: Agora copia o usuário E a senha.
  */
-function copyPassword(buttonElement) {
-    navigator.clipboard.writeText(DEFAULT_PASSWORD).then(() => {
+function copyCredentials(username, buttonElement) {
+    const textToCopy = `Usuário: ${username}\nSenha: ${DEFAULT_PASSWORD}`;
+    
+    navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = buttonElement.innerHTML;
         buttonElement.innerHTML = "Copiado!";
         buttonElement.disabled = true;
@@ -70,8 +66,8 @@ function copyPassword(buttonElement) {
             buttonElement.disabled = false;
         }, 2000); // Volta ao normal após 2 segundos
     }).catch(err => {
-        console.error('Falha ao copiar a senha: ', err);
-        alert("Não foi possível copiar a senha.");
+        console.error('Falha ao copiar credenciais: ', err);
+        alert("Não foi possível copiar as credenciais.");
     });
 }
 
@@ -87,7 +83,6 @@ submitNameBtn.addEventListener('click', () => {
     const generatedUser = generateUsername(userName);
     const credentialsMessage = `Ótimo, ${userName.split(' ')[0]}! Suas credenciais de primeiro acesso estão abaixo. Anote-as em um local seguro.`;
 
-    // Atualiza o balão para mostrar as credenciais
     assistantBubble.innerHTML = `
         <p>${credentialsMessage}</p>
         <div class="credentials-box">
@@ -98,17 +93,18 @@ submitNameBtn.addEventListener('click', () => {
             <div class="credential-item">
                 <span>Senha Padrão:</span>
                 <code>${DEFAULT_PASSWORD}</code>
-                <button class="copy-btn" id="copy-password-btn" title="Copiar senha">📋</button>
+                <button class="copy-btn" id="copy-credentials-btn" title="Copiar usuário e senha">📋</button>
             </div>
         </div>
         <button id="ack-credentials-btn">Entendi, anotei minhas credenciais</button>
     `;
     speak(credentialsMessage);
 
-    // Adiciona os eventos aos novos botões
-    document.getElementById('copy-password-btn').addEventListener('click', function() {
-        copyPassword(this);
+    // MUDANÇA: Adiciona o evento ao novo botão de cópia, passando o usuário gerado
+    document.getElementById('copy-credentials-btn').addEventListener('click', function() {
+        copyCredentials(generatedUser, this);
     });
+    
     document.getElementById('ack-credentials-btn').addEventListener('click', () => {
         const welcomeMessage = `Perfeito! Quando estiver pronto(a) para começar sua jornada de integração, clique no botão abaixo.`;
         updateAssistantBubble(welcomeMessage, "start");
@@ -130,7 +126,6 @@ function startJourney() {
 
 // --- FUNÇÕES DA API DO YOUTUBE PLAYER E CONTROLE DE FLUXO ---
 function onYouTubeIframeAPIReady() {}
-
 function loadVideoByIndex(index) {
     if (index < playlist.length) {
         const videoData = playlist[index];
@@ -147,9 +142,7 @@ function loadVideoByIndex(index) {
         }
     }
 }
-
 function onPlayerReady(event) { status.textContent = "Status: Reproduzindo vídeo..."; }
-
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
@@ -157,7 +150,6 @@ function onPlayerStateChange(event) {
         assistantBubble.classList.remove('hidden');
     }
 }
-
 function playNextVideo() {
     assistantBubble.classList.add('hidden');
     chatLogContainer.classList.add('hidden');
@@ -177,7 +169,6 @@ function playNextVideo() {
         status.textContent = "Status: Finalizado.";
     }
 }
-
 function updateAssistantBubble(text, mode) {
     let content = `<p>${text}</p>`;
     if (mode === "start") {
@@ -188,7 +179,6 @@ function updateAssistantBubble(text, mode) {
     assistantBubble.innerHTML = content;
     addBubbleEventListeners(mode);
 }
-
 function addBubbleEventListeners(mode) {
     if (mode === "start") {
         document.getElementById('start-journey-btn').addEventListener('click', startJourney);
