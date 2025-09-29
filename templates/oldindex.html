@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    
+    <img src="/static/logo.png" alt="Logo" id="logo-top-left" class="hidden">
 
-    <img src="/static/logo.png" alt="Logo" id="logo-top-left">
     <div id="main-content" class="hidden">
-            <div class="container">
+        <div class="container">
             <h1 id="videoTitle"></h1>
             <div id="video-player-container">
                 <div id="youtubePlayer"></div>
@@ -18,7 +19,7 @@
             
             <div id="finalSection" class="hidden">
                  <h2>Onboarding Concluído!</h2>
-                 <p>Parabéns, você finalizou a primeira parte da sua integração...</p>
+                 <p>Parabéns, você finalizou a primeira parte da sua integração.</p>
                  <a href="#" id="proofLink" class="button-link" target="_blank" rel="noopener noreferrer">Acessar a Prova</a>
             </div>
             
@@ -31,16 +32,17 @@
     </div>
 
     <div id="assistant-container" class="assistant-centered">
-            <div id="assistant-bubble" class="speech-bubble">
-                <p>Olá! Para começarmos, qual o seu nome completo?</p>
-                <div class="inline-form">
-                    <input type="text" id="name-input" placeholder="Digite seu nome completo">
-                    <button id="submit-name-btn">OK</button>
-                </div>
+        <img src="/static/logo.png" alt="Logo da Empresa" class="assistant-logo-centered">
+        <div id="assistant-bubble" class="speech-bubble">
+            <p>Olá! Para começarmos, qual o seu nome completo?</p>
+            <div class="inline-form">
+                <input type="text" id="name-input" placeholder="Digite seu nome completo">
+                <button id="submit-name-btn">OK</button>
             </div>
-            <div class="siri-aura"></div>
-                <!-- <div id="assistant-avatar"></div> -->
         </div>
+        <div class="siri-aura"></div>
+    </div>
+
     <script src="https://www.youtube.com/iframe_api"></script>
     <script src="/static/script.js"></script>
 </body>
