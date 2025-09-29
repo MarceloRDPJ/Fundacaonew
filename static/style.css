@@ -89,7 +89,7 @@ body::before {
     width: 80px; height: 80px; border-radius: 50%; position: relative;
     background: radial-gradient(circle at 60% 40%, #fff 0%, #f3f3f5 60%, #7b68ee 100%);
     box-shadow: 0 0 40px 10px #4f8cff88, 0 0 80px 20px #7b68ee88;
-    z-index: 0; margin-top: -20px; animation: siri-pulse 2.5s infinite ease-in-out;
+    z-index: 0; margin-top: 25px; animation: siri-pulse 2.5s infinite ease-in-out;
 }
 .assistant-corner .siri-aura { margin-top: 0; }
 @keyframes siri-pulse { 50% { transform: scale(1.12); } }
