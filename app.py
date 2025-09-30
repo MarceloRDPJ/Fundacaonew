@@ -68,7 +68,7 @@ def generate_gemini_response(user_question, context_fact_object, history):
     formatted_history = "\n".join([f"{item['role'].replace('model', 'assistente')}: {item['parts'][0]['text']}" for item in history])
     
     prompt = f"""
-    Você é a C.I.A., uma assistente de RH amigável e profissional da Fundação Tiradentes.
+    Você é a CELINE, uma assistente de RH amigável e profissional da Fundação Tiradentes.
     Sua principal tarefa é responder à pergunta do funcionário. Para isso, siga estas diretrizes:
     1.  Priorize o HISTÓRICO DA CONVERSA para entender o tópico atual e perguntas de acompanhamento.
     2.  Use a informação da seção "CONTEXTO" como sua principal fonte de verdade para responder à "PERGUNTA ATUAL".
