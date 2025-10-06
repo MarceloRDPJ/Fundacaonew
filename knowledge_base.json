@@ -29,6 +29,75 @@
       "topico": "localizacao",
       "informacao": "A Sede fica na Av. Contorno 2185, Goiânia, GO. O Hospital fica na Av. Atilio Correia Lima 1549, Goiânia, GO.",
       "palavras_chave_busca": ["onde fica", "localização", "endereço", "sede", "hospital", "localizacao da fundacao"]
-    }
+    },
+    {
+    "topico": "abrir_chamado_ti",
+    "informacao": "Para abrir um chamado para a TI, acesse a Intranet, clique em 'Sistemas Corporativos' e depois em 'Sistema Helpdesk'. Escolha a categoria e o tipo de atendimento, descreva o problema e anexe arquivos se necessário.",
+    "palavras_chave_busca": [
+      "abrir chamado ti", 
+      "helpdesk", 
+      "suporte técnico", 
+      "problema no computador", 
+      "criar ticket para ti", 
+      "como pedir ajuda para ti", 
+      "sistema helpdesk",
+      "internet não funciona"
+    ]
+  },
+  {
+    "topico": "diferenca_helpdesk_glpi",
+    "informacao": "O 'Sistema Helpdesk' é utilizado para abrir chamados direcionados à equipe de TI (problemas de computador, sistema, ramais, etc.). Já o 'GLPI Operações' é usado para solicitar serviços da área de operações, como manutenções prediais e reprografia.",
+    "palavras_chave_busca": [
+      "diferença helpdesk e glpi", 
+      "quando usar o helpdesk", 
+      "quando usar glpi operações", 
+      "chamado para ti ou operações", 
+      "qual sistema de chamado usar"
+    ]
+  },
+  {
+    "topico": "status_chamado_pendente",
+    "informacao": "O status 'Pendente' em um chamado significa que o técnico está aguardando uma resposta do usuário ou a resolução de um fator externo para prosseguir com o atendimento.",
+    "palavras_chave_busca": [
+      "chamado pendente", 
+      "o que significa status pendente", 
+      "meu ticket está pendente", 
+      "aguardando resposta chamado", 
+      "por que meu chamado parou"
+    ]
+  },
+  {
+    "topico": "regra_resposta_chamado",
+    "informacao": "A regra principal é que, se o usuário não responder a 3 interações consecutivas do técnico, o chamado será encerrado e será necessário abrir um novo ticket para o mesmo problema.",
+    "palavras_chave_busca": [
+      "regra de resposta chamado", 
+      "chamado encerrado por falta de resposta", 
+      "o que acontece se eu não responder o chamado", 
+      "quantas interações posso perder", 
+      "política de encerramento de ticket"
+    ]
+  },
+  {
+    "topico": "manutencao_ar_condicionado",
+    "informacao": "A solicitação de manutenção do ar condicionado deve ser feita através de um chamado para a equipe de Operações, utilizando o sistema 'GLPI Operações'.",
+    "palavras_chave_busca": [
+      "manutenção ar condicionado", 
+      "ar condicionado não funciona", 
+      "consertar ar condicionado", 
+      "chamado para ar condicionado", 
+      "glpi operações ar"
+    ]
+  },
+  {
+    "topico": "acompanhar_chamados",
+    "informacao": "Você pode acompanhar o andamento dos seus chamados na tela principal do sistema de chamados (Helpdesk ou GLPI), onde todos os seus tickets ficam listados. Além disso, as atualizações são enviadas para o seu e-mail corporativo.",
+    "palavras_chave_busca": [
+      "acompanhar meus chamados", 
+      "ver o status do ticket", 
+      "onde vejo os chamados que abri", 
+      "receber atualização por email", 
+      "histórico de chamados"
+    ]
+  }
   ]
 }
