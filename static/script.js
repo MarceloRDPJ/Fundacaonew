@@ -1,10 +1,11 @@
-// --- CONFIGURAÇÃO INICIAL E DADOS ---
+// --- CONFIGURAÇÃO INICIAL ---
 const mainContent = document.getElementById('main-content');
 const assistantContainer = document.getElementById('assistant-container');
 const assistantBubble = document.getElementById('assistant-bubble');
 const nameInput = document.getElementById('name-input');
 const submitNameBtn = document.getElementById('submit-name-btn');
 const logoTopLeft = document.getElementById('logo-top-left');
+
 const videoTitle = document.getElementById('videoTitle');
 const status = document.getElementById('status');
 const chatLogContainer = document.querySelector('.chat-log-container');
@@ -15,7 +16,7 @@ const proofLink = document.getElementById('proofLink');
 // --- DADOS DO PROJETO ---
 const playlist = [
     { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: GLIP - Como abrir chamado", id: "7Bq-mzVo3XY" }
+    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
 ];
 const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
 
@@ -30,10 +31,13 @@ const MAX_HISTORY_LENGTH = 6;
 let ptBrVoices = [];
 
 // --- LÓGICA DE VOZ DO NAVEGADOR ---
-function loadVoices() { ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR'); }
+function loadVoices() {
+    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+}
 loadVoices();
-if (window.speechSynthesis.onvoiceschanged !== undefined) { window.speechSynthesis.onvoiceschanged = loadVoices; }
-
+if (window.speechSynthesis.onvoiceschanged !== undefined) {
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+}
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -54,12 +58,8 @@ function generateUsername(fullName) {
     return `${parts[0]}.${parts[parts.length - 1]}`;
 }
 
-/**
- * MUDANÇA: Agora copia o usuário E a senha.
- */
 function copyCredentials(username, buttonElement) {
     const textToCopy = `Usuário: ${username}\nSenha: ${DEFAULT_PASSWORD}`;
-    
     navigator.clipboard.writeText(textToCopy).then(() => {
         const originalText = buttonElement.innerHTML;
         buttonElement.innerHTML = "Copiado!";
@@ -67,7 +67,7 @@ function copyCredentials(username, buttonElement) {
         setTimeout(() => {
             buttonElement.innerHTML = originalText;
             buttonElement.disabled = false;
-        }, 2000); // Volta ao normal após 2 segundos
+        }, 2000);
     }).catch(err => {
         console.error('Falha ao copiar credenciais: ', err);
         alert("Não foi possível copiar as credenciais.");
@@ -81,10 +81,10 @@ window.onload = () => {
 
 submitNameBtn.addEventListener('click', () => {
     userName = nameInput.value.trim();
-    if (userName === "") { alert("Por favor, digite seu nome completo."); return; }
+    if (userName === "") { alert("Por favor, digite seu nome."); return; }
 
     const generatedUser = generateUsername(userName);
-    const credentialsMessage = `Ótimo, ${userName.split(' ')[0]}! Suas credenciais de primeiro acesso estão abaixo. Anote-as em um local seguro.`;
+    const credentialsMessage = `Ótimo, ${userName.split(' ')[0]}! Suas credenciais de primeiro acesso estão abaixo.`;
 
     assistantBubble.innerHTML = `
         <p>${credentialsMessage}</p>
@@ -103,13 +103,11 @@ submitNameBtn.addEventListener('click', () => {
     `;
     speak(credentialsMessage);
 
-    // MUDANÇA: Adiciona o evento ao novo botão de cópia, passando o usuário gerado
     document.getElementById('copy-credentials-btn').addEventListener('click', function() {
         copyCredentials(generatedUser, this);
     });
-    
     document.getElementById('ack-credentials-btn').addEventListener('click', () => {
-        const welcomeMessage = `Perfeito! Quando estiver pronto(a) para começar sua jornada de integração, clique no botão abaixo.`;
+        const welcomeMessage = `Perfeito! Quando estiver pronto(a), vamos começar.`;
         updateAssistantBubble(welcomeMessage, "start");
         speak(welcomeMessage);
     });
@@ -127,8 +125,9 @@ function startJourney() {
     playNextVideo();
 }
 
-// --- FUNÇÕES DA API DO YOUTUBE PLAYER E CONTROLE DE FLUXO ---
+// --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
 function onYouTubeIframeAPIReady() {}
+
 function loadVideoByIndex(index) {
     if (index < playlist.length) {
         const videoData = playlist[index];
@@ -136,7 +135,10 @@ function loadVideoByIndex(index) {
         if (!player) {
             player = new YT.Player('youtubePlayer', {
                 height: '390', width: '640', videoId: videoData.id,
-                playerVars: { 'autoplay': 1, 'controls': 1, 'modestbranding': 1, 'origin': window.location.origin },
+                playerVars: { 
+                    'autoplay': 1, 'controls': 1, 'modestbranding': 1,
+                    'origin': window.location.origin 
+                },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
             });
         } else {
@@ -145,7 +147,11 @@ function loadVideoByIndex(index) {
         }
     }
 }
-function onPlayerReady(event) { status.textContent = "Status: Reproduzindo vídeo..."; }
+
+function onPlayerReady(event) {
+    status.textContent = "Status: Reproduzindo vídeo...";
+}
+
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
@@ -153,6 +159,8 @@ function onPlayerStateChange(event) {
         assistantBubble.classList.remove('hidden');
     }
 }
+
+// --- FUNÇÕES DE CONTROLE DE FLUXO E UI ---
 function playNextVideo() {
     assistantBubble.classList.add('hidden');
     chatLogContainer.classList.add('hidden');
@@ -162,16 +170,34 @@ function playNextVideo() {
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
+        // CORREÇÃO: Lógica de finalização ajustada
         assistantContainer.classList.add('hidden');
         logoTopLeft.classList.add('hidden');
-        mainContent.classList.remove('hidden');
+        
         const mainContainer = document.querySelector('#main-content .container');
-        if (mainContainer) mainContainer.innerHTML = '';
+        
+        // Garante que o container principal esteja visível, se estiver escondido
+        if (mainContent.classList.contains('hidden')) {
+            mainContent.classList.remove('hidden');
+        }
+
+        // Limpa o conteúdo anterior (título do vídeo, player, etc.)
+        if (mainContainer) {
+            mainContainer.innerHTML = ''; 
+        }
+        
+        // Mostra a seção final e a anexa ao container limpo
         finalSection.classList.remove('hidden');
-        if (mainContainer) mainContainer.appendChild(finalSection);
-        status.textContent = "Status: Finalizado.";
+        if (mainContainer) {
+            mainContainer.appendChild(finalSection);
+        }
+        
+        // Define o link da prova no botão
+        proofLink.href = GOOGLE_DRIVE_LINK;
     }
 }
+
+
 function updateAssistantBubble(text, mode) {
     let content = `<p>${text}</p>`;
     if (mode === "start") {
@@ -182,6 +208,7 @@ function updateAssistantBubble(text, mode) {
     assistantBubble.innerHTML = content;
     addBubbleEventListeners(mode);
 }
+
 function addBubbleEventListeners(mode) {
     if (mode === "start") {
         document.getElementById('start-journey-btn').addEventListener('click', startJourney);
@@ -255,6 +282,7 @@ function getAnswerFromAI(question) {
     .then(data => {
         const answerText = data.answer;
         addToChatLog('bot', answerText);
+        
         speak(answerText, () => {
             if (sendButton) sendButton.disabled = false;
             if (continueButton) continueButton.disabled = false;
@@ -266,5 +294,10 @@ function getAnswerFromAI(question) {
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
+        const errorMessage = "Desculpe, estou com problemas de conexão...";
+        addToChatLog('bot', errorMessage);
+        if (sendButton) sendButton.disabled = false;
+        if (continueButton) continueButton.disabled = false;
+        status.textContent = "Status: Erro de comunicação.";
     });
 }
