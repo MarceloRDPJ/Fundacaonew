@@ -294,11 +294,11 @@ function getAnswerFromAI(question) {
     fetch('/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // A ÚNICA MUDANÇA É AQUI: Adicionamos a linha 'userName: userName'
+        
         body: JSON.stringify({
             question: question,
             history: conversationHistory.slice(0, -1),
-            userName: userName // <-- ADICIONE ESTA LINHA
+            userName: userName 
         })
     })
     .then(response => response.json())
