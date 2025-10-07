@@ -161,10 +161,10 @@ function onPlayerStateChange(event) {
 
         if (isLastVideo) {
             // Se for o último vídeo, mostra o prompt de Q&A completo
-            updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
+            updateAssistantBubble("Ficou com alguma dúvida durante a Integração?", "prompt");
         } else {
             // Se não for o último, mostra apenas uma confirmação para continuar
-            updateAssistantBubble("Tudo certo? Clique abaixo para ir ao próximo tópico.", "confirm_continue");
+            updateAssistantBubble("Tudo certo? Clique abaixo para ir ao próximo tópico da integração.", "confirm_continue");
         }
         
         assistantBubble.classList.remove('hidden');
