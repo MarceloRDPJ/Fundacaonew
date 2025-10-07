@@ -35,40 +35,30 @@ else:
 
 EMBEDDING_MODEL = "models/text-embedding-004"
 
+# Função para inicializar a conexão com o Google Sheets
 def get_sheets_client():
     try:
-        # Este é o método recomendado para autenticar com uma conta de serviço.
-        # Ele lida melhor com o ciclo de vida das credenciais.
-        client = gspread.service_account(filename=GOOGLE_CREDENTIALS_PATH, scopes=SCOPES)
+        creds = Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH, scopes=SCOPES)
+        client = gspread.authorize(creds)
         return client
     except Exception as e:
-        print(f"ERRO CRÍTICO ao criar cliente do Google Sheets: {e}")
+        print(f"ERRO CRÍTICO ao conectar com Google Sheets: {e}")
         traceback.print_exc()
         return None
-
-# FUNÇÃO ATUALIZADA com mais logs para depuração
-def save_unanswered_question(question):
-    print("-> Iniciando processo para salvar pergunta não respondida...")
-    client = get_sheets_client()
     
+# Função para salvar a pergunta na planilha
+def save_unanswered_question(question):
+    client = get_sheets_client()
     if client:
-        print("-> Cliente do Google Sheets obtido com sucesso.")
         try:
             # Abre a planilha pelo ID e seleciona a primeira aba (worksheet)
             sheet = client.open_by_key(SHEET_ID).sheet1
-            print(f"-> Acessando planilha '{sheet.title}'.")
-            
             # Adiciona a pergunta em uma nova linha na primeira coluna
             sheet.append_row([question])
-            print(f"-> SUCESSO: Pergunta salva na planilha: '{question}'")
-        except gspread.exceptions.APIError as e:
-            print(f"-> ERRO DE API do Google ao tentar salvar na planilha: {e}")
-            traceback.print_exc()
+            print(f"Pergunta salva na planilha: '{question}'")
         except Exception as e:
-            print(f"-> ERRO GERAL ao tentar salvar na planilha: {e}")
+            print(f"ERRO ao tentar salvar na planilha: {e}")
             traceback.print_exc()
-    else:
-        print("-> FALHA: Cliente do Google Sheets não foi inicializado.")
 
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
