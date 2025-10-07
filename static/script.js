@@ -76,7 +76,7 @@ function copyCredentials(username, buttonElement) {
 
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
 window.onload = () => {
-    speak("Olá! Para começarmos, qual o seu nome completo?");
+    speak("Olá! Sou Celine a Assistente Virtual que vai acompanhar sua integração hoje. Para começarmos, qual o seu nome completo?");
 };
 
 submitNameBtn.addEventListener('click', () => {
