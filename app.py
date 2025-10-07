@@ -47,18 +47,40 @@ def get_sheets_client():
         return None
     
 # Função para salvar a pergunta na planilha
-def save_unanswered_question(question):
+def save_unanswered_question(question, user_name):
+    print("-> Iniciando processo para salvar pergunta não respondida com detalhes...")
     client = get_sheets_client()
+    
     if client:
+        print("-> Cliente do Google Sheets obtido com sucesso.")
         try:
-            # Abre a planilha pelo ID e seleciona a primeira aba (worksheet)
             sheet = client.open_by_key(SHEET_ID).sheet1
-            # Adiciona a pergunta em uma nova linha na primeira coluna
-            sheet.append_row([question])
-            print(f"Pergunta salva na planilha: '{question}'")
-        except Exception as e:
-            print(f"ERRO ao tentar salvar na planilha: {e}")
+            print(f"-> Acessando planilha '{sheet.title}'.")
+            
+            # NOVO: Define o fuso horário para o Brasil (GMT-3)
+            fuso_horario_brasil = timezone(timedelta(hours=-3))
+            
+            # NOVO: Pega a data e hora atuais e formata
+            timestamp = datetime.now(fuso_horario_brasil).strftime('%d/%m/%Y %H:%M:%S')
+            
+            # NOVO: Garante que o nome do usuário tenha um valor padrão
+            user_name_to_save = user_name if user_name else "Não informado"
+
+            # NOVO: Prepara a linha com as três colunas: Timestamp, Usuário, Pergunta
+            row_to_insert = [timestamp, user_name_to_save, question]
+            
+            # Adiciona a linha completa na planilha
+            sheet.append_row(row_to_insert)
+            print(f"-> SUCESSO: Pergunta salva na planilha: {row_to_insert}")
+
+        except gspread.exceptions.APIError as e:
+            print(f"-> ERRO DE API do Google ao tentar salvar na planilha: {e}")
             traceback.print_exc()
+        except Exception as e:
+            print(f"-> ERRO GERAL ao tentar salvar na planilha: {e}")
+            traceback.print_exc()
+    else:
+        print("-> FALHA: Cliente do Google Sheets não foi inicializado.")
 
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
@@ -145,18 +167,17 @@ def ask_question():
     data = request.get_json()
     user_question = data.get('question')
     history = data.get('history', [])
+    
+    # NOVO: Captura o nome do usuário que virá do frontend
+    user_name = data.get('userName', 'Desconhecido') 
 
-    # 1. Busca semântica por um fato relevante (comportamento atual)
+    # 1. Busca semântica (continua igual)
     relevant_fact_object = find_relevant_facts_semantica(user_question)
 
-    # 2. Gera a resposta do assistente PRIMEIRO (comportamento atual)
-    # Esta função NÃO será alterada.
+    # 2. Gera a resposta (continua igual)
     answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
 
-    # 3. NOVA LÓGICA: Analisa a RESPOSTA FINAL para decidir se salva a pergunta
-    #    Esta é a única parte que realmente muda.
-    
-    # Lista de frases que indicam que o assistente admitiu não saber a resposta.
+    # 3. Lógica para analisar e salvar (agora passando o user_name)
     frases_de_recusa = [
         "não encontrei essa informação",
         "nao encontrei essa informação",
@@ -166,13 +187,12 @@ def ask_question():
         "não possuo essa informação"
     ]
 
-    # Verifica se alguma das frases de recusa está na resposta final gerada (ignorando maiúsculas/minúsculas)
-    # Se estiver, significa que o assistente "não soube" responder.
     if any(frase in answer_text.lower() for frase in frases_de_recusa):
-        print(f"A resposta final indica que a informação não foi encontrada. Salvando pergunta na planilha: '{user_question}'")
-        save_unanswered_question(user_question)
+        print(f"A resposta final indica que a informação não foi encontrada. Salvando pergunta na planilha...")
+        # NOVO: Passa o nome do usuário para a função de salvamento
+        save_unanswered_question(user_question, user_name)
 
-    # 4. Retorna a resposta para o usuário (comportamento atual)
+    # 4. Retorna a resposta (continua igual)
     return jsonify({"answer": answer_text})
 
 if __name__ == '__main__':
