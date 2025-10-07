@@ -1,6 +1,7 @@
 import os
 import json
 import unicodedata
+import traceback
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import google.generativeai as genai
@@ -8,6 +9,7 @@ import numpy as np
 from dotenv import load_dotenv
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
+from google.oauth2.service_account import Credentials
 from datetime import datetime, timezone, timedelta
 
 load_dotenv()
@@ -18,12 +20,45 @@ CORS(app)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 
+SCOPES = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive.file'
+]
+
+GOOGLE_CREDENTIALS_PATH = '/etc/secrets/google_credentials.json'
+SHEET_ID = 'SEU_ID_DA_PLANILHA_AQUI'
+
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
     print("ERRO: Chave GEMINI_API_KEY não encontrada no ambiente.")
 
 EMBEDDING_MODEL = "models/text-embedding-004"
+
+# Função para inicializar a conexão com o Google Sheets
+def get_sheets_client():
+    try:
+        creds = Credentials.from_service_account_file(GOOGLE_CREDENTIALS_PATH, scopes=SCOPES)
+        client = gspread.authorize(creds)
+        return client
+    except Exception as e:
+        print(f"ERRO CRÍTICO ao conectar com Google Sheets: {e}")
+        traceback.print_exc()
+        return None
+    
+# Função para salvar a pergunta na planilha
+def save_unanswered_question(question):
+    client = get_sheets_client()
+    if client:
+        try:
+            # Abre a planilha pelo ID e seleciona a primeira aba (worksheet)
+            sheet = client.open_by_key(SHEET_ID).sheet1
+            # Adiciona a pergunta em uma nova linha na primeira coluna
+            sheet.append_row([question])
+            print(f"Pergunta salva na planilha: '{question}'")
+        except Exception as e:
+            print(f"ERRO ao tentar salvar na planilha: {e}")
+            traceback.print_exc()
 
 def setup_google_sheets():
     try:
@@ -101,7 +136,7 @@ def find_relevant_facts_semantica(user_question):
 # --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
 def generate_gemini_response(user_question, context_fact_object, history):
     if not context_fact_object and not history:
-        log_unanswered_question(user_question) # <-- AQUI A MÁGICA ACONTECE
+        log_unanswered_question(user_question)
         return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
 
     context_topic = context_fact_object.get('topico', 'Geral') if context_fact_object else 'Geral'
