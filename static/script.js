@@ -155,7 +155,18 @@ function onPlayerReady(event) {
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
         status.textContent = "Status: Vídeo concluído.";
-        updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
+
+        //Verifica se o vídeo atual é o último da playlist
+        const isLastVideo = currentVideoIndex === playlist.length - 1;
+
+        if (isLastVideo) {
+            // Se for o último vídeo, mostra o prompt de Q&A completo
+            updateAssistantBubble("Ficou com alguma dúvida sobre este tópico?", "prompt");
+        } else {
+            // Se não for o último, mostra apenas uma confirmação para continuar
+            updateAssistantBubble("Tudo certo? Clique abaixo para ir ao próximo tópico.", "confirm_continue");
+        }
+        
         assistantBubble.classList.remove('hidden');
     }
 }
@@ -200,11 +211,15 @@ function playNextVideo() {
 
 function updateAssistantBubble(text, mode) {
     let content = `<p>${text}</p>`;
+    
     if (mode === "start") {
         content += `<button id="start-journey-btn">Vamos Começar!</button>`;
     } else if (mode === "prompt") {
         content += `<div><button id="post-video-yes">Sim</button><button id="post-video-no">Não</button></div>`;
+    } else if (mode === "confirm_continue") { // NOVO: Modo para o botão simples de continuar
+        content += `<button id="confirm-continue-btn">Entendi, próximo tópico &rarr;</button>`;
     }
+
     assistantBubble.innerHTML = content;
     addBubbleEventListeners(mode);
 }
@@ -220,7 +235,7 @@ function addBubbleEventListeners(mode) {
                         <input type="text" id="questionInput" placeholder="Digite sua dúvida aqui..." autocomplete="off">
                         <button type="submit" id="sendButton">Enviar</button>
                     </form>
-                    <button id="continueButton">Continuar para o próximo vídeo &rarr;</button>
+                    <button id="continueButton">Finalizar Integração &rarr;</button>
                 </div>`;
             assistantBubble.innerHTML = qaContent;
             addBubbleEventListeners("qa_inner");
@@ -240,7 +255,13 @@ function addBubbleEventListeners(mode) {
             getAnswerFromAI(userQuestion);
             questionInput.value = '';
         });
+        // ALTERADO: O botão agora chama playNextVideo para ir para a tela final
         document.getElementById('continueButton').addEventListener('click', () => {
+            if (player && typeof player.stopVideo === 'function') player.stopVideo();
+            playNextVideo();
+        });
+    } else if (mode === "confirm_continue") { // NOVO: Faz o novo botão funcionar
+        document.getElementById('confirm-continue-btn').addEventListener('click', () => {
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             playNextVideo();
         });
