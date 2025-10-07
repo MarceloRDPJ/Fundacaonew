@@ -15,11 +15,11 @@ app = Flask(__name__)
 CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
-    print("ERRO: Chave GOOGLE_API_KEY não encontrada no ambiente.")
+    print("ERRO: Chave GEMINI_API_KEY não encontrada no ambiente.")
 
 EMBEDDING_MODEL = "models/text-embedding-004"
 
