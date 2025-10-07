@@ -82,6 +82,13 @@ def save_unanswered_question(question, user_name):
     else:
         print("-> FALHA: Cliente do Google Sheets não foi inicializado.")
 
+def load_synonyms():
+    try:
+        with open('synonyms.json', 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        print("AVISO: O arquivo 'synonyms.json' não foi encontrado. A expansão de siglas não funcionará.")
+        return {} # Retorna um dicionário vazio se o arquivo não existir
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
 def load_knowledge_base():
@@ -91,6 +98,9 @@ def load_knowledge_base():
     except FileNotFoundError:
         print("ERRO: O arquivo 'knowledge_base_com_embeddings.json' não foi encontrado.")
         return {"fatos": []}
+    
+# --- CARREGANDO OS DADOS EXTERNOS AO INICIAR ---
+SYNONYM_MAP = load_synonyms() # Carrega os sinônimos do arquivo JSON
 
 knowledge_base = load_knowledge_base()
 facts_with_embeddings = [fact for fact in knowledge_base['fatos'] if 'embedding' in fact and fact['embedding']]
