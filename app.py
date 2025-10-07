@@ -16,6 +16,8 @@ CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
+
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
 else:
@@ -46,16 +48,21 @@ def setup_google_sheets():
 sheets_connection = setup_google_sheets()
 
 def log_unanswered_question(question):
-    if sheets_connection:
-        try:
-            # Fuso horário de Brasília
-            tz = timezone(timedelta(hours=-3))
-            timestamp = datetime.now(tz).strftime('%Y-%m-%d %H:%M:%S')
-            row = [timestamp, question]
-            sheets_connection.append_row(row)
+    if not APPS_SCRIPT_URL:
+        print("AVISO: URL do Apps Script não configurada. Pergunta não registrada.")
+        return
+
+    try:
+        # Faz uma chamada POST simples para o nosso App da Web
+        headers = {'Content-Type': 'application/json'}
+        payload = {'question': question}
+        response = requests.post(APPS_SCRIPT_URL, json=payload, headers=headers)
+        if response.json().get('status') == 'success':
             print(f"Pergunta não respondida registrada na planilha: '{question}'")
-        except Exception as e:
-            print(f"ERRO ao tentar escrever na planilha: {e}")
+        else:
+            print(f"ERRO ao registrar na planilha: {response.text}")
+    except Exception as e:
+        print(f"ERRO ao tentar chamar o Apps Script: {e}")
 
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
