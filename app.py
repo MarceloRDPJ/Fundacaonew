@@ -145,8 +145,34 @@ def ask_question():
     data = request.get_json()
     user_question = data.get('question')
     history = data.get('history', [])
+
+    # 1. Busca semântica por um fato relevante (comportamento atual)
     relevant_fact_object = find_relevant_facts_semantica(user_question)
+
+    # 2. Gera a resposta do assistente PRIMEIRO (comportamento atual)
+    # Esta função NÃO será alterada.
     answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
+
+    # 3. NOVA LÓGICA: Analisa a RESPOSTA FINAL para decidir se salva a pergunta
+    #    Esta é a única parte que realmente muda.
+    
+    # Lista de frases que indicam que o assistente admitiu não saber a resposta.
+    frases_de_recusa = [
+        "não encontrei essa informação",
+        "nao encontrei essa informação",
+        "não tenho essa informação",
+        "nao tenho essa informacao",
+        "na minha base de conhecimento",
+        "não possuo essa informação"
+    ]
+
+    # Verifica se alguma das frases de recusa está na resposta final gerada (ignorando maiúsculas/minúsculas)
+    # Se estiver, significa que o assistente "não soube" responder.
+    if any(frase in answer_text.lower() for frase in frases_de_recusa):
+        print(f"A resposta final indica que a informação não foi encontrada. Salvando pergunta na planilha: '{user_question}'")
+        save_unanswered_question(user_question)
+
+    # 4. Retorna a resposta para o usuário (comportamento atual)
     return jsonify({"answer": answer_text})
 
 if __name__ == '__main__':
