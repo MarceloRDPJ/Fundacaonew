@@ -26,7 +26,7 @@ SCOPES = [
 ]
 
 GOOGLE_CREDENTIALS_PATH = '/etc/secrets/google_credentials.json'
-SHEET_ID = 'SEU_ID_DA_PLANILHA_AQUI'
+SHEET_ID = '17S3BJeOwmjGnBo4IkbFvQvqVqjdLadB9xMBac9vTxtA'
 
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
