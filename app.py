@@ -123,9 +123,6 @@ def find_relevant_facts_semantica(user_question):
 
 # --- FUNÇÃO DE GERAÇÃO COM GEMINI ---
 def generate_gemini_response(user_question, context_fact_object, history):
-    if not context_fact_object and not history:
-        save_unanswered_question(user_question)
-        return "Desculpe, não encontrei informações sobre isso em minha base de dados. Pode tentar perguntar de outra forma?"
 
     context_topic = context_fact_object.get('topico', 'Geral') if context_fact_object else 'Geral'
     context_info = context_fact_object.get('informacao', '') if context_fact_object else ''
