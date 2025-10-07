@@ -2,6 +2,7 @@ import os
 import json
 import unicodedata
 import traceback
+import re
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import google.generativeai as genai
@@ -89,6 +90,17 @@ def load_synonyms():
     except FileNotFoundError:
         print("AVISO: O arquivo 'synonyms.json' não foi encontrado. A expansão de siglas não funcionará.")
         return {} # Retorna um dicionário vazio se o arquivo não existir
+    
+def expand_query_with_synonyms(query, synonym_map):
+    normalized_query = normalize_text(query)
+    for synonym, official_term in synonym_map.items():
+        # Usa Expressão Regular (regex) para substituir a palavra inteira ("\b" significa "word boundary" ou "fronteira da palavra").
+        # Isso garante que "vt" seja substituído se for uma palavra sozinha,
+        # não importando a pontuação ou se está no fim da frase.
+        # re.IGNORECASE faz com que ele funcione para "vt", "VT", "Vt", etc.
+        pattern = r'\b' + re.escape(synonym) + r'\b'
+        normalized_query = re.sub(pattern, official_term, normalized_query, flags=re.IGNORECASE)
+    return normalized_query
 
 # --- CARREGANDO A BASE DE CONHECIMENTO ---
 def load_knowledge_base():
