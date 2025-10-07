@@ -94,10 +94,7 @@ def load_synonyms():
 def expand_query_with_synonyms(query, synonym_map):
     normalized_query = normalize_text(query)
     for synonym, official_term in synonym_map.items():
-        # Usa Expressão Regular (regex) para substituir a palavra inteira ("\b" significa "word boundary" ou "fronteira da palavra").
-        # Isso garante que "vt" seja substituído se for uma palavra sozinha,
-        # não importando a pontuação ou se está no fim da frase.
-        # re.IGNORECASE faz com que ele funcione para "vt", "VT", "Vt", etc.
+        # Usa Expressão Regular (regex) para substituir a palavra inteira
         pattern = r'\b' + re.escape(synonym) + r'\b'
         normalized_query = re.sub(pattern, official_term, normalized_query, flags=re.IGNORECASE)
     return normalized_query
@@ -184,19 +181,21 @@ def index():
 @app.route('/ask', methods=['POST'])
 def ask_question():
     data = request.get_json()
-    user_question = data.get('question')
+    user_question_original = data.get('question')
     history = data.get('history', [])
-    
-    # NOVO: Captura o nome do usuário que virá do frontend
-    user_name = data.get('userName', 'Desconhecido') 
+    user_name = data.get('userName', 'Desconhecido')
 
-    # 1. Busca semântica (continua igual)
-    relevant_fact_object = find_relevant_facts_semantica(user_question)
+    # Utiliza a nova função para expandir a pergunta original
+    user_question_expanded = expand_query_with_synonyms(user_question_original, SYNONYM_MAP)
+    print(f"Pergunta original: '{user_question_original}' -> Pergunta expandida para busca: '{user_question_expanded}'")
 
-    # 2. Gera a resposta (continua igual)
-    answer_text = generate_gemini_response(user_question, relevant_fact_object, history)
+    # 1. A busca semântica usa a pergunta EXPANDIDA
+    relevant_fact_object = find_relevant_facts_semantica(user_question_expanded)
 
-    # 3. Lógica para analisar e salvar (agora passando o user_name)
+    # 2. A geração da resposta usa a pergunta ORIGINAL
+    answer_text = generate_gemini_response(user_question_original, relevant_fact_object, history)
+
+    # 3. Lógica para salvar a pergunta (usando a pergunta ORIGINAL)
     frases_de_recusa = [
         "não encontrei essa informação",
         "nao encontrei essa informação",
@@ -208,10 +207,9 @@ def ask_question():
 
     if any(frase in answer_text.lower() for frase in frases_de_recusa):
         print(f"A resposta final indica que a informação não foi encontrada. Salvando pergunta na planilha...")
-        # NOVO: Passa o nome do usuário para a função de salvamento
-        save_unanswered_question(user_question, user_name)
+        save_unanswered_question(user_question_original, user_name)
 
-    # 4. Retorna a resposta (continua igual)
+    # 4. Retorna a resposta para o usuário
     return jsonify({"answer": answer_text})
 
 if __name__ == '__main__':
