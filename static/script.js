@@ -16,7 +16,9 @@ const proofLink = document.getElementById('proofLink');
 // --- DADOS DO PROJETO ---
 const playlist = [
     { title: "Tópico 1: Boas-vindas", id: "TfWqNT4C15w" },
-    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" }
+    { title: "Tópico 2: Apresentando os Benefícios", id: "nRuJN6wwfvs" },
+    { title: "Tópico 3: Vale", id: "WSfTir1w5v0" },
+    { title: "Tópico 4: GLPI", id: "7Bq-mzVo3XY" }
 ];
 const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
 
