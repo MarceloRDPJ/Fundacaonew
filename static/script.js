@@ -151,10 +151,24 @@ function loadVideoByIndex(index) {
 
 function onPlayerReady(event) {
     status.textContent = "Status: Reproduzindo vídeo...";
+    forceIframeSize(); // <-- ADICIONE AQUI
+    event.target.playVideo(); // Garante que o vídeo toque após o 'ready'
+}
+
+function forceIframeSize() {
+    const iframe = document.getElementById('youtubePlayer'); // O ID do seu player
+    if (iframe) {
+        iframe.style.width = '100%';
+        iframe.style.height = '100%';
+        iframe.style.position = 'absolute';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+    }
 }
 
 function onPlayerStateChange(event) {
     if (event.data === YT.PlayerState.ENDED) {
+        forceIframeSize(); // Garante que o iframe mantenha o tamanho correto
         status.textContent = "Status: Vídeo concluído.";
 
         //Verifica se o vídeo atual é o último da playlist
