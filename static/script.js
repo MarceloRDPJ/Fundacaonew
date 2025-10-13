@@ -135,7 +135,7 @@ function loadVideoByIndex(index) {
         videoTitle.textContent = videoData.title;
         if (!player) {
             player = new YT.Player('youtubePlayer', {
-                height: '390', width: '640', videoId: videoData.id,
+                height: '480', width: '854', videoId: videoData.id,
                 playerVars: { 
                     'autoplay': 1, 'controls': 1, 'modestbranding': 1,
                     'origin': window.location.origin 
