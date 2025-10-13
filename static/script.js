@@ -133,11 +133,19 @@ function loadVideoByIndex(index) {
     if (index < playlist.length) {
         const videoData = playlist[index];
         videoTitle.textContent = videoData.title;
+        
+        // Garante que o div do player está vazio antes de criar um novo player
+        const youtubePlayerDiv = document.getElementById('youtubePlayer');
+        if (youtubePlayerDiv) youtubePlayerDiv.innerHTML = '';
+
         if (!player) {
             player = new YT.Player('youtubePlayer', {
-                height: '480', width: '854', videoId: videoData.id,
+                // Remove height e width fixos daqui, vamos controlá-los via CSS
+                videoId: videoData.id,
                 playerVars: { 
-                    'autoplay': 1, 'controls': 1, 'modestbranding': 1,
+                    'autoplay': 1, 
+                    'controls': 1, 
+                    'modestbranding': 1,
                     'origin': window.location.origin 
                 },
                 events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
@@ -146,6 +154,17 @@ function loadVideoByIndex(index) {
             player.loadVideoById(videoData.id);
             player.playVideo();
         }
+        
+        // CORREÇÃO CRÍTICA: Após o player ser criado/carregado, ajustamos o iframe
+        // Isso garante que o iframe gerado pelo YouTube respeite o CSS responsivo.
+        // Damos um pequeno delay para garantir que o iframe já foi injetado no DOM.
+        setTimeout(() => {
+            const iframe = youtubePlayerDiv.querySelector('iframe');
+            if (iframe) {
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+            }
+        }, 100); // Pequeno delay de 100ms
     }
 }
 
@@ -179,33 +198,24 @@ function playNextVideo() {
     chatLog.innerHTML = '';
     conversationHistory = [];
     currentVideoIndex++;
+
     if (currentVideoIndex < playlist.length) {
+        // Garante que os elementos de vídeo estão visíveis para o próximo vídeo
+        if (videoTitle) videoTitle.classList.remove('hidden');
+        if (videoPlayerContainer) videoPlayerContainer.classList.remove('hidden');
+        if (status) status.classList.remove('hidden');
+        finalSection.classList.add('hidden'); // Esconde a seção final se estiver visível
         loadVideoByIndex(currentVideoIndex);
     } else {
-        // CORREÇÃO: Lógica de finalização ajustada
+        // Esconde os elementos de vídeo e mostra a seção final
+        if (videoTitle) videoTitle.classList.add('hidden');
+        if (videoPlayerContainer) videoPlayerContainer.classList.add('hidden');
+        if (status) status.classList.add('hidden');
+        
         assistantContainer.classList.add('hidden');
         logoTopLeft.classList.add('hidden');
-        
-        const mainContainer = document.querySelector('#main-content .container');
-        
-        // Garante que o container principal esteja visível, se estiver escondido
-        if (mainContent.classList.contains('hidden')) {
-            mainContent.classList.remove('hidden');
-        }
-
-        // Limpa o conteúdo anterior (título do vídeo, player, etc.)
-        if (mainContainer) {
-            mainContainer.innerHTML = ''; 
-        }
-        
-        // Mostra a seção final e a anexa ao container limpo
         finalSection.classList.remove('hidden');
-        if (mainContainer) {
-            mainContainer.appendChild(finalSection);
-        }
-        
-        // Define o link da prova no botão
-        proofLink.href = GOOGLE_DRIVE_LINK;
+        proofLink.href = GOOGLE_DRIVE_LINK; // Garante que o link está correto
     }
 }
 
