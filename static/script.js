@@ -12,6 +12,8 @@ const chatLogContainer = document.querySelector('.chat-log-container');
 const chatLog = document.getElementById('chatLog');
 const finalSection = document.getElementById('finalSection');
 const proofLink = document.getElementById('proofLink');
+const learningTrail = document.getElementById('learning-trail');
+const trailList = document.getElementById('trail-list');
 
 // --- DADOS DO PROJETO ---
 const playlist = [
@@ -75,8 +77,35 @@ function copyCredentials(username, buttonElement) {
     });
 }
 
+// NOVO: Função para criar a lista da trilha dinamicamente
+function populateLearningTrail() {
+    trailList.innerHTML = ''; // Limpa a lista antes de preencher
+    playlist.forEach((video, index) => {
+        const item = document.createElement('li');
+        item.className = 'trail-item';
+        item.id = `trail-item-${index}`; // ID para facilitar a seleção
+        item.textContent = video.title;
+        trailList.appendChild(item);
+    });
+}
+
+// NOVO: Função para atualizar o estado visual da trilha
+function updateTrailState(activeIndex) {
+    const items = document.querySelectorAll('.trail-item');
+    items.forEach((item, index) => {
+        item.classList.remove('active', 'completed'); // Reseta as classes
+
+        if (index < activeIndex) {
+            item.classList.add('completed');
+        } else if (index === activeIndex) {
+            item.classList.add('active');
+        }
+    });
+}
+
 // --- FLUXO PRINCIPAL DA APLICAÇÃO ---
 window.onload = () => {
+    populateLearningTrail(); // Preenche a trilha assim que a página carrega
     speak("Olá! Sou Celine a Assistente Virtual que vai acompanhar sua integração hoje. Para começarmos, qual o seu nome completo?");
 };
 
@@ -123,6 +152,7 @@ function startJourney() {
     assistantContainer.classList.add('assistant-corner');
     mainContent.classList.remove('hidden');
     logoTopLeft.classList.remove('hidden');
+    learningTrail.classList.remove('hidden');
     playNextVideo();
 }
 
@@ -131,6 +161,7 @@ function onYouTubeIframeAPIReady() {}
 
 function loadVideoByIndex(index) {
     if (index < playlist.length) {
+        updateTrailState(index);
         const videoData = playlist[index];
         videoTitle.textContent = videoData.title;
         if (!player) {
@@ -196,6 +227,11 @@ function playNextVideo() {
     if (currentVideoIndex < playlist.length) {
         loadVideoByIndex(currentVideoIndex);
     } else {
+
+        learningTrail.classList.add('hidden'); // ESCONDE A TRILHA
+        assistantContainer.classList.add('hidden');
+        logoTopLeft.classList.add('hidden');
+        
         // CORREÇÃO: Lógica de finalização ajustada
         assistantContainer.classList.add('hidden');
         logoTopLeft.classList.add('hidden');

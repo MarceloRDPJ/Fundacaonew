@@ -399,3 +399,102 @@ body::before {
     font-size: 18px;
     margin-left: 10px;
 }
+
+/* --- NOVO: Estilos para a Trilha de Aprendizagem --- */
+#learning-trail {
+    position: fixed;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 280px;
+    background: rgba(35, 36, 58, 0.7);
+    border-radius: 12px;
+    padding: 20px 25px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(123, 104, 238, 0.2);
+    backdrop-filter: blur(10px); /* Efeito de vidro fosco */
+    z-index: 998; /* Abaixo do assistente, mas acima do conteúdo */
+    transition: opacity 0.5s, transform 0.5s;
+}
+
+#learning-trail.hidden {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-20px);
+    pointer-events: none;
+}
+
+#learning-trail h2 {
+    margin: 0 0 15px 0;
+    color: #eaf0ff;
+    font-weight: 600;
+    text-align: center;
+    border-bottom: 1px solid rgba(123, 104, 238, 0.3);
+    padding-bottom: 10px;
+}
+
+#trail-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: trail-counter; /* Inicia um contador */
+}
+
+.trail-item {
+    padding: 12px 0 12px 40px;
+    position: relative;
+    color: rgba(234, 240, 255, 0.5); /* Cor padrão para itens pendentes */
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trail-item:last-child {
+    border-bottom: none;
+}
+
+/* Estilo do número/ícone antes do texto */
+.trail-item::before {
+    counter-increment: trail-counter; /* Incrementa o contador para cada item */
+    content: counter(trail-counter); /* Mostra o número do contador */
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #eaf0ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+/* Estado ATIVO: O vídeo que está sendo assistido */
+.trail-item.active {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.trail-item.active::before {
+    background-color: #7b68ee; /* Cor roxa do tema */
+    box-shadow: 0 0 10px #7b68ee;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Estado CONCLUÍDO: Vídeos já assistidos */
+.trail-item.completed {
+    color: rgba(234, 240, 255, 0.6);
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.trail-item.completed::before {
+    content: '✔'; /* Troca o número por um checkmark */
+    background-color: #28a745; /* Verde de sucesso */
+    color: white;
+    font-size: 16px;
+}
