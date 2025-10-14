@@ -19,7 +19,8 @@ const trailList = document.getElementById('trail-list');
 const playlist = [
     { title: "Fundação Tiradentes", id: "nRuJN6wwfvs" },
     { title: "Departamento Pessoal", id: "WSfTir1w5v0" },
-    { title: "Tecnologia da Informação e Informação", id: "7Bq-mzVo3XY" }
+    { title: "Tecnologia da Informação e Informação", id: "7Bq-mzVo3XY" },
+    { title: "Teste", id: "7Bq-mzVo3XY" }
 ];
 const GOOGLE_DRIVE_LINK = "https://forms.office.com/Pages/ResponsePage.aspx?id=SpXsTHm1dEujPhiC3aNsD84rYKMX_bBAuqpbw2JvlBNURjJSWDc2UDJOQUNGWUNSMDhXMVJTNFFUQS4u";
 
@@ -231,7 +232,7 @@ function playNextVideo() {
         learningTrail.classList.add('hidden'); // ESCONDE A TRILHA
         assistantContainer.classList.add('hidden');
         logoTopLeft.classList.add('hidden');
-        
+
         // CORREÇÃO: Lógica de finalização ajustada
         assistantContainer.classList.add('hidden');
         logoTopLeft.classList.add('hidden');
