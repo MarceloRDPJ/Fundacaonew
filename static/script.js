@@ -157,26 +157,31 @@ function startJourney() {
 }
 
 // --- FUNÇÕES DA API DO YOUTUBE PLAYER ---
-function onYouTubeIframeAPIReady() {}
+function onYouTubeIframeAPIReady() {
+    // Cria a instância do player quando a API do YouTube estiver pronta.
+    player = new YT.Player('youtubePlayer', {
+        height: '100%',
+        width: '100%',
+        playerVars: {
+            'controls': 1,
+            'modestbranding': 1,
+            'origin': window.location.origin,
+            'autoplay': 1 // Autoplay para os vídeos carregados
+        },
+        events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+        }
+    });
+}
 
 function loadVideoByIndex(index) {
-    if (index < playlist.length) {
+    if (index < playlist.length && player && typeof player.loadVideoById === 'function') {
         updateTrailState(index);
         const videoData = playlist[index];
         videoTitle.textContent = videoData.title;
-        if (!player) {
-            player = new YT.Player('youtubePlayer', {
-                videoId: videoData.id,
-                playerVars: { 
-                    'autoplay': 1, 'controls': 1, 'modestbranding': 1,
-                    'origin': window.location.origin 
-                },
-                events: { 'onReady': onPlayerReady, 'onStateChange': onPlayerStateChange }
-            });
-        } else {
-            player.loadVideoById(videoData.id);
-            player.playVideo();
-        }
+        // Carrega e reproduz o vídeo no player existente.
+        player.loadVideoById(videoData.id);
     }
 }
 

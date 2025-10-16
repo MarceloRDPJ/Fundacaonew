@@ -3,7 +3,7 @@ import json
 import unicodedata
 import traceback
 import re
-from flask import Flask, request, jsonify, render_template, send_from_directory
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import google.generativeai as genai
 import numpy as np
@@ -14,11 +14,7 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime, timezone, timedelta
 
 load_dotenv()
-# Constrói o caminho absoluto para o diretório de build do frontend
-static_folder_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "dist")
-
-# Configura o Flask para servir a aplicação React
-app = Flask(__name__, static_folder=static_folder_path, static_url_path='/')
+app = Flask(__name__)
 CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
@@ -178,15 +174,9 @@ def generate_gemini_response(user_question, context_fact_object, history):
         return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
 
 # --- ROTAS DA APLICAÇÃO ---
-
-# Rota para servir a aplicação React (o index.html principal)
-@app.route('/', defaults={'path': ''})
-@app.route('/<path:path>')
-def serve(path):
-    if path != "" and os.path.exists(app.static_folder + '/' + path):
-        return send_from_directory(app.static_folder, path)
-    else:
-        return send_from_directory(app.static_folder, 'index.html')
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
