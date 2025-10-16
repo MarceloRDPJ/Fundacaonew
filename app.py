@@ -14,9 +14,11 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime, timezone, timedelta
 
 load_dotenv()
+# Constrói o caminho absoluto para o diretório de build do frontend
+static_folder_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "frontend", "dist")
+
 # Configura o Flask para servir a aplicação React
-# O diretório 'dist' é onde o Vite coloca os arquivos de build
-app = Flask(__name__, static_folder='frontend/dist', static_url_path='/')
+app = Flask(__name__, static_folder=static_folder_path, static_url_path='/')
 CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
