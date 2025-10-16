@@ -3,7 +3,7 @@ import json
 import unicodedata
 import traceback
 import re
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, send_from_directory
 from flask_cors import CORS
 import google.generativeai as genai
 import numpy as np
@@ -14,7 +14,9 @@ from google.oauth2.service_account import Credentials
 from datetime import datetime, timezone, timedelta
 
 load_dotenv()
-app = Flask(__name__)
+# Configura o Flask para servir a aplicação React
+# O diretório 'dist' é onde o Vite coloca os arquivos de build
+app = Flask(__name__, static_folder='frontend/dist', static_url_path='/')
 CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
@@ -174,9 +176,15 @@ def generate_gemini_response(user_question, context_fact_object, history):
         return "Desculpe, estou com um problema para me conectar à minha inteligência. Tente novamente mais tarde."
 
 # --- ROTAS DA APLICAÇÃO ---
-@app.route('/')
-def index():
-    return render_template('index.html')
+
+# Rota para servir a aplicação React (o index.html principal)
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve(path):
+    if path != "" and os.path.exists(app.static_folder + '/' + path):
+        return send_from_directory(app.static_folder, path)
+    else:
+        return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/ask', methods=['POST'])
 def ask_question():
