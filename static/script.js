@@ -31,11 +31,15 @@ let player;
 let userName = "";
 let conversationHistory = [];
 const MAX_HISTORY_LENGTH = 6;
-let ptBrVoices = [];
+let celineVoice = null;
 
 // --- LÓGICA DE VOZ DO NAVEGADOR ---
 function loadVoices() {
-    ptBrVoices = window.speechSynthesis.getVoices().filter(voice => voice.lang === 'pt-BR');
+    const allVoices = window.speechSynthesis.getVoices();
+    // Prioriza vozes de alta qualidade e femininas.
+    celineVoice = allVoices.find(voice => voice.lang === 'pt-BR' && voice.name.includes('Google')) ||
+                  allVoices.find(voice => voice.lang === 'pt-BR' && voice.name.includes('Female')) ||
+                  allVoices.find(voice => voice.lang === 'pt-BR');
 }
 loadVoices();
 if (window.speechSynthesis.onvoiceschanged !== undefined) {
@@ -44,8 +48,12 @@ if (window.speechSynthesis.onvoiceschanged !== undefined) {
 function speak(text, onEndCallback) {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    if (ptBrVoices.length > 0) { utterance.voice = ptBrVoices[0]; }
+    if (celineVoice) {
+        utterance.voice = celineVoice;
+    }
     utterance.lang = 'pt-BR';
+    utterance.pitch = 1.1; // Tom ligeiramente mais agudo.
+    utterance.rate = 0.9; // Fala um pouco mais devagar.
     utterance.onend = () => { if (onEndCallback) onEndCallback(); };
     window.speechSynthesis.speak(utterance);
 }
