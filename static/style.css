@@ -8,7 +8,7 @@
 }
 /* --- GERAL E LAYOUT --- */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     background: radial-gradient(circle at 50% 40%, #23243a 0%, #2c2e31 60%, #1a1b2b 100%);
     color: #eaf0ff;
     display: flex;
@@ -35,12 +35,13 @@ body::before {
 
 #main-content .container {
     text-align: center;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.9);
     padding: 30px 40px;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     width: 90%;
-    max-width: 700px;
+    max-width: 900px;
+    color: #333;
 }
 
 .hidden {
@@ -50,13 +51,12 @@ body::before {
 /* --- PLAYER DE VÍDEO --- */
 #video-player-container {
     position: relative;
-    padding-bottom: 56.25%; /* Proporção 16:9 */
-    height: 0;
+    width: 854px;
+    height: 480px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin: 0 auto 20px auto;
     background-color: #000;
     border-radius: 8px;
-    width: 100%; 
 }
 #videoTitle {
     color: #1a237e;
@@ -109,15 +109,16 @@ body::before {
 /* --- BALÃO DE FALA (SPEECH BUBBLE) --- */
 .speech-bubble {
     width: 340px;
-    background: #f0eef1;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     border-radius: 24px;
     padding: 32px 36px;
     box-shadow: 0 8px 32px 0 rgba(79,140,255,0.18), 0 2px 12px rgba(0,0,0,0.08);
     position: relative;
     text-align: center;
     transition: opacity 0.5s, transform 0.5s;
-    border: 1.5px solid #7b68ee33;
-    color: #222;
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    color: #FFF;
     overflow: hidden;
     font-weight: bold;
 }
@@ -140,6 +141,17 @@ body::before {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.12); }
 }
+
+.siri-aura.thinking {
+    animation: siri-thinking-pulse 1.5s infinite;
+}
+
+@keyframes siri-thinking-pulse {
+    0% { transform: scale(1); box-shadow: 0 0 40px 10px #4f8cff88, 0 0 80px 20px #7b68ee88; }
+    50% { transform: scale(1.2); box-shadow: 0 0 50px 15px #4f8cffaa, 0 0 100px 30px #7b68eeaa; }
+    100% { transform: scale(1); box-shadow: 0 0 40px 10px #4f8cff88, 0 0 80px 20px #7b68ee88; }
+}
+
 .siri-aura::before {
     content: '';
     position: absolute;
