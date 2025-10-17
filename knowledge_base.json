@@ -1,0 +1,103 @@
+{
+  "fatos": [
+    {
+      "topico": "beneficios_geral",
+      "informacao": "A empresa oferece plano de saúde e odontológico, vale refeição e vale transporte.",
+      "palavras_chave_busca": ["benefícios", "vantagens", "plano", "convênio", "quais os beneficios", "sobre os beneficios"]
+    },
+    {
+      "topico": "vale_transporte",
+      "informacao": "O Vale Transporte é um benefício para custear o deslocamento entre residência e trabalho via transporte coletivo. O desconto para o colaborador é de 6% sobre o salário.",
+      "palavras_chave_busca": ["vt", "vale transporte", "onibus", "busão", "locomocao", "desconto transporte", "passagem", "ajuda de custo para transporte", "valor do vt", "valor vale transporte"]
+    },
+    {
+      "topico": "plano_de_saude",
+      "informacao": "O Plano de Saúde é da Hapvida, com opções de Enfermaria por R$476,05 e Apartamento por R$550,60. O Plano Odontológico é o Uniodonto, por R$30,92 para titulares e dependentes.",
+      "palavras_chave_busca": ["plano de saúde", "plano odontológico", "odontológico", "hapvida", "uniodonto", "convenio medico", "assistencia medica", "valor do plano de saude"]
+    },
+    {
+      "topico": "vale_refeicao",
+      "informacao": "O valor do vale refeição é de R$700,00 mensais. Deste valor, é descontado R$20,00 por mês na folha de pagamento.",
+      "palavras_chave_busca": ["vale refeição", "vr", "ticket", "comida", "almoço", "alimentação", "desconto vr", "ajuda de custo para alimentação", "valor do vr"]
+    },
+    {
+      "topico": "horario_trabalho",
+      "informacao": "O horário de trabalho padrão é das 9h às 18h, com uma hora de almoço.",
+      "palavras_chave_busca": ["horário", "hora", "expediente", "entrada", "saída", "trabalhar", "jornada"]
+    },
+    {
+      "topico": "localizacao",
+      "informacao": "A Sede fica na Av. Contorno 2185, Goiânia, GO. O Hospital fica na Av. Atilio Correia Lima 1549, Goiânia, GO.",
+      "palavras_chave_busca": ["onde fica", "localização", "endereço", "sede", "hospital", "localizacao da fundacao"]
+    },
+    {
+    "topico": "abrir_chamado_ti",
+    "informacao": "Para abrir um chamado para a TI, acesse a Intranet, clique em 'Sistemas Corporativos' e depois em 'Sistema Helpdesk'. Escolha a categoria e o tipo de atendimento, descreva o problema e anexe arquivos se necessário.",
+    "palavras_chave_busca": [
+      "abrir chamado ti", 
+      "helpdesk", 
+      "suporte técnico", 
+      "problema no computador", 
+      "criar ticket para ti", 
+      "como pedir ajuda para ti", 
+      "sistema helpdesk",
+      "internet não funciona"
+    ]
+  },
+  {
+    "topico": "diferenca_helpdesk_glpi",
+    "informacao": "O 'Sistema Helpdesk' é utilizado para abrir chamados direcionados à equipe de TI (problemas de computador, sistema, ramais, etc.). Já o 'GLPI Operações' é usado para solicitar serviços da área de operações, como manutenções prediais e reprografia.",
+    "palavras_chave_busca": [
+      "diferença helpdesk e glpi", 
+      "quando usar o helpdesk", 
+      "quando usar glpi operações", 
+      "chamado para ti ou operações", 
+      "qual sistema de chamado usar"
+    ]
+  },
+  {
+    "topico": "status_chamado_pendente",
+    "informacao": "O status 'Pendente' em um chamado significa que o técnico está aguardando uma resposta do usuário ou a resolução de um fator externo para prosseguir com o atendimento.",
+    "palavras_chave_busca": [
+      "chamado pendente", 
+      "o que significa status pendente", 
+      "meu ticket está pendente", 
+      "aguardando resposta chamado", 
+      "por que meu chamado parou"
+    ]
+  },
+  {
+    "topico": "regra_resposta_chamado",
+    "informacao": "A regra principal é que, se o usuário não responder a 3 interações consecutivas do técnico, o chamado será encerrado e será necessário abrir um novo ticket para o mesmo problema.",
+    "palavras_chave_busca": [
+      "regra de resposta chamado", 
+      "chamado encerrado por falta de resposta", 
+      "o que acontece se eu não responder o chamado", 
+      "quantas interações posso perder", 
+      "política de encerramento de ticket"
+    ]
+  },
+  {
+    "topico": "manutencao_ar_condicionado",
+    "informacao": "A solicitação de manutenção do ar condicionado deve ser feita através de um chamado para a equipe de Operações, utilizando o sistema 'GLPI Operações'.",
+    "palavras_chave_busca": [
+      "manutenção ar condicionado", 
+      "ar condicionado não funciona", 
+      "consertar ar condicionado", 
+      "chamado para ar condicionado", 
+      "glpi operações ar"
+    ]
+  },
+  {
+    "topico": "acompanhar_chamados",
+    "informacao": "Você pode acompanhar o andamento dos seus chamados na tela principal do sistema de chamados (Helpdesk ou GLPI), onde todos os seus tickets ficam listados. Além disso, as atualizações são enviadas para o seu e-mail corporativo.",
+    "palavras_chave_busca": [
+      "acompanhar meus chamados", 
+      "ver o status do ticket", 
+      "onde vejo os chamados que abri", 
+      "receber atualização por email", 
+      "histórico de chamados"
+    ]
+  }
+  ]
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assistente de Onboarding Interativo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+    <img src="/static/logo.png" alt="Logo" id="logo-top-left">
+    <div id="main-content" class="hidden">
+        <div id="video-player-container">
+            <div id="youtubePlayer"></div> 
+        </div>
+
+    <div class="container">
+        <h1 id="videoTitle"></h1>
+        
+        <div id="finalSection" class="hidden">
+             <h2>Onboarding Concluído!</h2>
+             <p>Parabéns, você finalizou a primeira parte da sua integração...</p>
+             <a href="#" id="proofLink" class="button-link" target="_blank" rel="noopener noreferrer">Acessar a Prova</a>
+        </div>
+        
+        <p id="status" class="status"></p>
+        
+        <div class="chat-log-container hidden">
+            <div id="chatLog"></div>
+        </div>
+    </div>
+</div>
+    
+    <div id="learning-trail" class="hidden">
+        <h2>Sua Trilha</h2>
+        <ol id="trail-list"></ol>
+    </div>
+
+    <div id="assistant-container" class="assistant-centered">
+            <div id="assistant-bubble" class="speech-bubble">
+                <p>Olá! Sou Celine a sua Assistente Virtual que vai acompanhar sua integração hoje. Para começarmos, qual o seu nome completo?</p>
+                <div class="inline-form">
+                    <input type="text" id="name-input" placeholder="Digite seu nome completo">
+                    <button id="submit-name-btn">OK</button>
+                </div>
+            </div>
+            <div class="siri-aura"></div>
+                <!-- <div id="assistant-avatar"></div> -->
+        </div>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
