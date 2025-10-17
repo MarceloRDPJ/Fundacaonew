@@ -18,7 +18,7 @@ app = Flask(__name__)
 CORS(app)
 
 # --- CONFIGURAÇÃO DO GOOGLE GEMINI ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY="AIzaSyBYiPLJ5BZc3LLWWrUWRMu8OU8fXEGign8"
 APPS_SCRIPT_URL = os.getenv("APPS_SCRIPT_URL")
 
 SCOPES = [
@@ -26,7 +26,7 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive.file'
 ]
 
-GOOGLE_CREDENTIALS_PATH = os.getenv("GOOGLE_CREDENTIALS_PATH")
+GOOGLE_CREDENTIALS_PATH = '/etc/secrets/google_credentials.json'
 SHEET_ID = '17S3BJeOwmjGnBo4IkbFvQvqVqjdLadB9xMBac9vTxtA'
 
 if GEMINI_API_KEY:

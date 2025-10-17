@@ -5,7 +5,6 @@ const assistantBubble = document.getElementById('assistant-bubble');
 const nameInput = document.getElementById('name-input');
 const submitNameBtn = document.getElementById('submit-name-btn');
 const logoTopLeft = document.getElementById('logo-top-left');
-const siriAura = document.querySelector('.siri-aura');
 
 const videoTitle = document.getElementById('videoTitle');
 const status = document.getElementById('status');
@@ -320,23 +319,8 @@ function addBubbleEventListeners(mode) {
     }
 }
 
-// --- EFEITO MÁQUINA DE ESCREVER ---
-function typewriterEffect(element, text, callback) {
-    let i = 0;
-    element.innerHTML = ""; // Limpa o conteúdo antes de começar
-    const typing = setInterval(() => {
-        if (i < text.length) {
-            element.innerHTML += text.charAt(i);
-            i++;
-        } else {
-            clearInterval(typing);
-            if (callback) callback();
-        }
-    }, 30); // Velocidade da digitação (em milissegundos)
-}
-
 // --- LÓGICA DA IA (COM MEMÓRIA) ---
-function addToChatLog(sender, message, callback) {
+function addToChatLog(sender, message) {
     const role = sender === 'user' ? 'user' : 'model';
     conversationHistory.push({ role: role, parts: [{ text: message }] });
     if (conversationHistory.length > MAX_HISTORY_LENGTH) {
@@ -345,20 +329,8 @@ function addToChatLog(sender, message, callback) {
     const messageElement = document.createElement('p');
     const senderPrefix = sender === 'user' ? 'Você' : 'Assistente';
     messageElement.className = sender === 'user' ? 'user-message' : 'bot-message';
-
-    const contentElement = document.createElement('span');
-    messageElement.innerHTML = `<strong>${senderPrefix}:</strong> `;
-    messageElement.appendChild(contentElement);
-
+    messageElement.innerHTML = `<strong>${senderPrefix}:</strong> ${message}`;
     chatLog.appendChild(messageElement);
-
-    if (sender === 'bot') {
-        typewriterEffect(contentElement, message, callback);
-    } else {
-        contentElement.innerHTML = message;
-        if (callback) callback();
-    }
-
     chatLog.parentElement.scrollTop = chatLog.parentElement.scrollHeight;
 }
 
@@ -368,7 +340,6 @@ function getAnswerFromAI(question) {
     if (sendButton) sendButton.disabled = true;
     if (continueButton) continueButton.disabled = true;
     status.textContent = "Pensando...";
-    siriAura.classList.add('thinking'); // Adiciona a animação de "pensando"
     addToChatLog('user', question);
 
     fetch('/ask', {
@@ -384,27 +355,23 @@ function getAnswerFromAI(question) {
     .then(response => response.json())
     .then(data => {
         const answerText = data.answer;
+        addToChatLog('bot', answerText);
         
-        addToChatLog('bot', answerText, () => {
-            siriAura.classList.remove('thinking'); // Remove a animação de "pensando"
-            speak(answerText, () => {
-                if (sendButton) sendButton.disabled = false;
-                if (continueButton) continueButton.disabled = false;
-                status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
-                if(document.getElementById('questionInput')) {
-                    document.getElementById('questionInput').focus();
-                }
-            });
+        speak(answerText, () => {
+            if (sendButton) sendButton.disabled = false;
+            if (continueButton) continueButton.disabled = false;
+            status.textContent = "Status: Faça outra pergunta ou clique em continuar.";
+            if(document.getElementById('questionInput')) {
+                document.getElementById('questionInput').focus();
+            }
         });
     })
     .catch(error => {
         console.error('Erro ao se comunicar com a IA:', error);
         const errorMessage = "Desculpe, estou com problemas de conexão...";
-        addToChatLog('bot', errorMessage, () => {
-            siriAura.classList.remove('thinking'); // Remove a animação de "pensando"
-            if (sendButton) sendButton.disabled = false;
-            if (continueButton) continueButton.disabled = false;
-            status.textContent = "Status: Erro de comunicação.";
-        });
+        addToChatLog('bot', errorMessage);
+        if (sendButton) sendButton.disabled = false;
+        if (continueButton) continueButton.disabled = false;
+        status.textContent = "Status: Erro de comunicação.";
     });
 }
